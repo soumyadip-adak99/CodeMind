@@ -1,3 +1,32 @@
 spring:
   application:
     name: backend
+
+  # db configs
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/codemind}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    open-in-view: false
+
+#  flyway:
+#    enabled: true
+#    locations: classpath:db/migration
+#    baseline-on-migrate: true
+
+  ai:
+    openai:
+      api-key: ${NVDIA_OPEN_AI_API_KEY}
+      chat:
+        model: openai/gpt-oss-20b
+      embedding:
+        model: text-embedding-3-small
