@@ -1,4 +1,4 @@
-package com.codeMind.backend.configuration;
+package com.codeMind.backend.config;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
