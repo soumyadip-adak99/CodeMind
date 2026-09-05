@@ -30,3 +30,8 @@ spring:
         model: openai/gpt-oss-20b
       embedding:
         model: text-embedding-3-small
+      base-url: ${OPEN_Ai_BASE_URL}
+
+app:
+  encrypt:
+    password: ${ENCRYPTION_PASSWORD}
