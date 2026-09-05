@@ -7,4 +7,6 @@ import java.util.UUID;
 public interface UserService {
 
     User requiredById(UUID id);
+
+    String decryptAccessToken(User user);
 }
