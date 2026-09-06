@@ -17,11 +17,11 @@ public class EncryptionConfig {
     @Value("${app.encrypt.password}")
     private String password;
 
+    @Value("${app.encrypt.salt}")
+    private String salt;
 
     @Bean
     public TextEncryptor textEncryptor() {
-        String salt = generateSecureSalt();
-
         AesCbcBytesEncryptor bytesEncryptor = AesCbcBytesEncryptor.withPassword(password, salt).build();
 
         return new TextEncryptor() {
@@ -38,12 +38,5 @@ public class EncryptionConfig {
                 return new String(decrypted, StandardCharsets.UTF_8);
             }
         };
-    }
-
-    private String generateSecureSalt() {
-        byte[] saltBytes = new byte[32];
-        SecureRandom secureRandom = new SecureRandom();
-        secureRandom.nextBytes(saltBytes);
-        return java.util.Base64.getEncoder().encodeToString(saltBytes);
     }
 }

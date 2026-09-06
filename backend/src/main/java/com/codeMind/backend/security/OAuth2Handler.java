@@ -24,7 +24,7 @@ public class OAuth2Handler {
     @Bean
     public AuthenticationFailureHandler oauth2FailerHandler() {
         SimpleUrlAuthenticationFailureHandler handler = new SimpleUrlAuthenticationFailureHandler();
-        handler.setDefaultFailureUrl(frontendUrl + "/login/error=oauth_failed");
+        handler.setDefaultFailureUrl(frontendUrl + "/login?error=access_denied");
         return handler;
     }
 }
