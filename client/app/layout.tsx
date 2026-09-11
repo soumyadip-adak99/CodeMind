@@ -26,17 +26,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
             suppressHydrationWarning
         >
-            <head />
-            <QueryProvider>
-                <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                >
-                    <body className="min-h-full flex flex-col">{children}</body>
-                </ThemeProvider>
-            </QueryProvider>
+            <body className="min-h-full flex flex-col">
+                <QueryProvider>
+                    <ThemeProvider
+                        attribute="class"
+                        defaultTheme="system"
+                        enableSystem
+                        disableTransitionOnChange
+                    >
+                        {children}
+                    </ThemeProvider>
+                </QueryProvider>
+            </body>
         </html>
     );
 }

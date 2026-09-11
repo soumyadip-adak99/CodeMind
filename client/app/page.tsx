@@ -1,5 +1,7 @@
-import { ModeToggle } from "@/components/ui/mode-toggle";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-    return <ModeToggle />;
+// Middleware redirects "/" before this page ever renders.
+// This redirect() is a server-side fallback in case middleware is bypassed.
+export default function RootPage() {
+    redirect("/login");
 }
