@@ -1,58 +1,27 @@
-"use client";
+"use client"
 
-import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { RequiredAuth } from "@/components/provider/required-auth"
+import { AppShell } from "@/components/layout/app-shell"
+import { CodeMindIcon } from "@/components/icons/code-mind"
 
-import { BrandMark } from "@/components/layout/app-shell";
-import { Spinner } from "@/components/ui/spinner";
-import { useCurrentUser, useLogout, setAuthCookie } from "@/hooks/use-auth";
-
-export default function DashboardPage() {
-    const router = useRouter();
-    const { data: user, isError, isFetched } = useCurrentUser();
-    const logout = useLogout();
-    const redirected = useRef(false);
-
-    // If the session cookie was stale, api.me() returns 401.
-    // Clear the frontend cookie and send back to /login.
-    useEffect(() => {
-        if (isFetched && isError && !redirected.current) {
-            redirected.current = true;
-            setAuthCookie(false);
-            router.replace("/login");
-        }
-    }, [isFetched, isError, router]);
-
-    // Loading state while verifying session
-    if (!user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <div className="flex flex-col items-center gap-4">
-                    <BrandMark className="h-12 w-12 text-primary animate-pulse" />
-                    <Spinner className="h-6 w-6 text-primary" />
-                </div>
-            </div>
-        );
-    }
-
+export default function Dashboard() {
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-background p-4">
-            <BrandMark className="h-14 w-14 text-primary" />
-
-            <div className="text-center space-y-1">
-                <h1 className="text-2xl font-semibold tracking-tight">
-                    Welcome, {user.displayName}!
-                </h1>
-                <p className="text-sm text-muted-foreground">@{user.githubUsername}</p>
-            </div>
-
-            <button
-                onClick={() => logout.mutate()}
-                disabled={logout.isPending}
-                className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground transition-colors"
-            >
-                {logout.isPending ? "Signing out…" : "Sign out"}
-            </button>
-        </div>
-    );
+        <RequiredAuth>
+            <AppShell hideHeader>
+                <div className="flex h-full flex-col items-center justify-center space-y-6 text-center px-4 animate-in fade-in zoom-in-95 duration-500">
+                    <div className="flex aspect-square size-20 md:size-28 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-xl">
+                        <CodeMindIcon className="size-12 md:size-16" />
+                    </div>
+                    <div className="space-y-3">
+                        <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+                            Welcome to <span className="text-primary">CodeMind</span>
+                        </h1>
+                        <p className="mx-auto max-w-[600px] text-base sm:text-lg md:text-xl text-muted-foreground font-medium">
+                            Your intelligent coding companion. Upload your repositories, chat with your code, and build faster than ever.
+                        </p>
+                    </div>
+                </div>
+            </AppShell>
+        </RequiredAuth>
+    )
 }

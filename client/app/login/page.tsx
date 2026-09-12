@@ -14,6 +14,7 @@ import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Spinner } from "@/components/ui/spinner";
 import { BACKEND_GITHUB_LOGIN_URL } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { CodeMindIcon } from "@/components/icons/code-mind";
 
 function getErrorMessage(error: string): string {
     switch (error) {
@@ -64,7 +65,7 @@ function LoginContent() {
     return (
         <div className="flex flex-col space-y-6 w-full max-w-md mx-auto relative z-10">
             <div className="flex flex-col space-y-2 text-center items-center">
-                <BrandMark className="h-12 w-12 mb-2 text-primary" />
+                <CodeMindIcon className="h-12 w-12 mb-2 text-primary" />
                 <h1 className="text-3xl font-semibold tracking-tight">Welcome back</h1>
                 <p className="text-sm text-muted-foreground">Sign in to your account to continue</p>
             </div>

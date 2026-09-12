@@ -1,23 +1,20 @@
 "use client";
 
 import { Suspense, useEffect, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import { BrandMark } from "@/components/layout/app-shell";
 import { Spinner } from "@/components/ui/spinner";
-import { useCurrentUser } from "@/hooks/use-auth";
+import { useAuthStore } from "@/store/auth-store";
 
 function AuthCallbackContent() {
-    const router = useRouter();
     const searchParams = useSearchParams();
     const errorParam = searchParams.get("error");
-    
-    // Determine if we should skip fetching user because there's an OAuth error
     const hasError = !!errorParam;
 
-    const { data: user, isLoading, isError, isFetched } = useCurrentUser({
-        enabled: !hasError,
-    });
+    const fetchUser = useAuthStore((s) => s.fetchUser);
+    const status = useAuthStore((s) => s.status);
+    const user = useAuthStore((s) => s.user);
 
     const navigated = useRef(false);
 
@@ -26,28 +23,34 @@ function AuthCallbackContent() {
 
         if (hasError) {
             navigated.current = true;
-            // Map common OAuth errors to our app's error codes
             let loginError = "oauth2_error";
             if (errorParam === "access_denied") {
                 loginError = "github_cancelled";
             } else if (errorParam) {
                 loginError = errorParam;
             }
-            router.replace(`/login?error=${loginError}`);
+            window.location.href = `/login?error=${loginError}`;
             return;
         }
 
-        // Wait until the request has settled
-        if (isLoading || !isFetched) return;
+        // Trigger a fresh fetch from the backend — the backend has just
+        // set CODEMIND_SESSION after the OAuth dance, so this will succeed.
+        fetchUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-        if (user) {
+    useEffect(() => {
+        if (navigated.current) return;
+        if (status === "loading") return;
+
+        if (status === "authenticated" && user) {
             navigated.current = true;
-            router.replace("/dashboard");
-        } else if (isError) {
+            window.location.href = "/dashboard";
+        } else if (status === "unauthenticated") {
             navigated.current = true;
-            router.replace("/login?error=oauth2_error");
+            window.location.href = "/login?error=oauth2_error";
         }
-    }, [user, isLoading, isFetched, isError, router, hasError, errorParam]);
+    }, [status, user]);
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background relative z-10">

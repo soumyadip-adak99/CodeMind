@@ -1,57 +1,39 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+/**
+ * use-auth.ts
+ *
+ * Thin hook wrappers over the Zustand auth store.
+ * Login / logout / session management is fully handled by the Spring Boot
+ * backend via the CODEMIND_SESSION HttpOnly cookie — the frontend never
+ * reads or writes session cookies directly.
+ */
 
-import { api, ApiError } from "@/lib/api";
-import { queryKeys } from "@/lib/query-keys";
+import { useAuthStore } from "@/store/auth-store";
 
-export const AUTH_COOKIE = "code_mind";
+export { useUser, useAuthStatus, useAuthStore } from "@/store/auth-store";
 
-export function setAuthCookie(authed: boolean) {
-    if (typeof document === "undefined") return;
-
-    if (authed) {
-        document.cookie = `${AUTH_COOKIE}=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-    } else {
-        document.cookie = `${AUTH_COOKIE}=; path=/; max-age=0; SameSite=Lax`;
-    }
-}
-
-export function hasSessionCookie(): boolean {
-    if (typeof document === "undefined") return false;
-    return document.cookie.split(";").some((c) => c.trim().startsWith(`${AUTH_COOKIE}=`));
-}
-
-export function useCurrentUser({ enabled = true }: { enabled?: boolean } = {}) {
-    return useQuery({
-        queryKey: queryKeys.auth.me(),
-        enabled,
-        queryFn: async () => {
-            try {
-                const user = await api.me();
-                setAuthCookie(true);
-                return user;
-            } catch (error) {
-                setAuthCookie(false);
-                throw error;
-            }
-        },
-    });
-}
-
+/**
+ * Returns a stable `logout` function backed by the auth store.
+ * Calling it will:
+ *   1. POST /api/auth/logout  (backend invalidates CODEMIND_SESSION)
+ *   2. Clear the Zustand store
+ *   3. Hard-redirect to /login
+ */
 export function useLogout() {
-    const queryClient = useQueryClient();
-    const router = useRouter();
+    return useAuthStore((s) => s.logout);
+}
 
-    return useMutation({
-        mutationFn: async () => {
-            await api.logout();
-        },
-        onSuccess: () => {
-            setAuthCookie(false);
-            queryClient.invalidateQueries({ queryKey: queryKeys.auth.all });
-            router.replace("/login");
-        },
-    });
+/**
+ * Backward-compatible hook that mirrors the old React Query shape.
+ * Components using { data: user, isLoading } don't need to be changed.
+ */
+export function useCurrentUser() {
+    const user = useAuthStore((s) => s.user);
+    const status = useAuthStore((s) => s.status);
+    return {
+        data: user,
+        isLoading: status === "loading",
+        isError: false,
+    };
 }
