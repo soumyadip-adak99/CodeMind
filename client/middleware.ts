@@ -1,15 +1,20 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-// Must match AUTH_COOKIE in hooks/use-auth.ts
-const AUTH_COOKIE = "code_mind";
+/**
+ * The real session cookie set by Spring Boot (HttpOnly).
+ * The middleware runs on the Edge and CAN read HttpOnly cookies,
+ * so we use this as the single source of truth for authentication state.
+ * The frontend never reads or writes this cookie directly.
+ */
+const SESSION_COOKIE = "CODEMIND_SESSION";
 
 // Routes that do NOT require authentication
 const PUBLIC_PATHS = ["/login", "/auth/callback"];
 
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
-    const isAuthenticated = request.cookies.has(AUTH_COOKIE);
+    const isAuthenticated = request.cookies.has(SESSION_COOKIE);
 
     // Root "/" → redirect based on auth state
     if (pathname === "/") {
@@ -46,6 +51,6 @@ export const config = {
          * - Any file with an extension (images, fonts, etc.)
          */
         "/((?!_next/static|_next/image|favicon.ico)(?!.*\\..*).+)",
-        "/",
+        "/dashboard/:path*", "/chat/:path*", "/login", "/auth/callback",
     ],
 };

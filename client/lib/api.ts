@@ -1,30 +1,78 @@
-import { User } from "@/@type/index";
+import type { User, ApiErrorResponse } from "@/@type/index";
 
-export const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+// ─── Base URL ────────────────────────────────────────────────────────────────
+
+export const BACKEND_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 export const BACKEND_GITHUB_LOGIN_URL = `${BACKEND_BASE_URL}/oauth2/authorization/github`;
 
+export type { ApiErrorResponse };
+
+// ─── Core fetch ──────────────────────────────────────────────────────────────
+
 export class ApiError extends Error {
     status: number;
+    error: string;
+    timestamp: string;
 
-    constructor(status: number, message: string) {
-        super(message);
-        this.status = status;
+    constructor(response: ApiErrorResponse) {
+        super(response.message);
+        this.name = "ApiError";
+        this.status = response.status;
+        this.error = response.error;
+        this.timestamp = response.timestamp;
+    }
+
+    /** True when the user is not authenticated (401) */
+    get isUnauthorized() {
+        return this.status === 401;
+    }
+
+    /** True when the resource was not found (404) */
+    get isNotFound() {
+        return this.status === 404;
+    }
+
+    /** True when validation/bad input (400) */
+    get isBadRequest() {
+        return this.status === 400;
+    }
+
+    /** True when the server crashed (5xx) */
+    get isServerError() {
+        return this.status >= 500;
     }
 }
 
-const parseError = async (res: Response): Promise<string> => {
+
+async function parseErrorResponse(res: Response): Promise<ApiErrorResponse> {
+    const fallback: ApiErrorResponse = {
+        status: res.status,
+        error: res.statusText || "Request failed",
+        message: res.statusText || "An unexpected error occurred",
+        timestamp: new Date().toISOString(),
+    };
+
     try {
-        const data = await res.json();
-        return data.message ?? data.error ?? res.statusText;
-    } catch (error) {
-        console.error("Error parsing response:", error);
-        return res.statusText || "Request failed";
+        const text = await res.text();
+        if (!text) return fallback;
+        const data = JSON.parse(text) as Partial<ApiErrorResponse>;
+        return {
+            status: data.status ?? res.status,
+            error: data.error ?? fallback.error,
+            message: data.message ?? fallback.message,
+            timestamp: data.timestamp ?? fallback.timestamp,
+        };
+    } catch {
+        return fallback;
     }
-};
+}
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-    const res = await fetch(`${BACKEND_BASE_URL}/${path}`, {
+    const url = `${BACKEND_BASE_URL.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
+
+    const res = await fetch(url, {
         ...init,
         credentials: "include",
         headers: {
@@ -34,19 +82,38 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     });
 
     if (!res.ok) {
-        throw new ApiError(res.status, await parseError(res));
+        const errorResponse = await parseErrorResponse(res);
+        throw new ApiError(errorResponse);
     }
 
+    // 204 No Content — return undefined
     if (res.status === 204) {
         return undefined as T;
     }
 
-    return res.json() as Promise<T>;
+    const text = await res.text();
+    if (!text) return undefined as unknown as T;
+
+    return JSON.parse(text) as T;
 }
 
+// ─── Auth API ─────────────────────────────────────────────────────────────────
+
 export const api = {
-    me: () => apiFetch<User>("/api/auth/me"),
-    logout: () =>
+    /**
+     * GET /api/auth/me
+     * Returns the currently authenticated user.
+     * Throws ApiError with status 401 if not authenticated.
+     */
+    me: (): Promise<User> =>
+        apiFetch<User>("/api/auth/me"),
+
+    /**
+     * POST /api/auth/logout
+     * Invalidates the server session and clears CODEMIND_SESSION cookie.
+     * Returns 204 No Content on success.
+     */
+    logout: (): Promise<void> =>
         apiFetch<void>("/api/auth/logout", {
             method: "POST",
         }),
