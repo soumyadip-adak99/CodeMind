@@ -30,7 +30,7 @@ spring:
         model: openai/gpt-oss-20b
       embedding:
         model: text-embedding-3-small
-      base-url: ${OPEN_Ai_BASE_URL}
+      base-url: ${OPEN_AI_BASE_URL}
 
     vectorstore:
       pgvector:

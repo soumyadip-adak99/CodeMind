@@ -16,6 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.savedrequest.NullRequestCache;
 
 @Configuration
 @EnableWebSecurity
@@ -42,17 +43,13 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                // Disable request caching so Spring never creates a new session
+                // (and a new CODEMIND_SESSION cookie) when returning 401 for API calls.
+                .requestCache(cache -> cache.requestCache(new NullRequestCache()))
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfo -> userInfo.userService(gitHubOAuth2UserService))
                         .successHandler(oauth2SuccessHandler)
                         .failureHandler(oauth2FailerHandler)
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler((request, response, authentication) -> response.setStatus(HttpStatus.NO_CONTENT.value()))
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("CODEMIND_SESSION")
                 )
         ;
 
