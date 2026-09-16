@@ -12,13 +12,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponse {
-    UUID id;
+    private UUID id;
 
-    Long gitHubId;
+    private Long gitHubId;
 
-    String gitHubUserName;
+    private String gitHubUserName;
 
-    String displayName;
+    private String displayName;
 
-    String avatarUrl;
+    private String avatarUrl;
 }
