@@ -1,6 +1,5 @@
 package com.codeMind.backend.services.github;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -13,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class GitHubApiClient {
 
     private static final String GITHUB_BASE_API = "https://api.github.com";
@@ -22,7 +20,16 @@ public class GitHubApiClient {
     private static final ParameterizedTypeReference<Map<String, Object>> MAP = new ParameterizedTypeReference<>() {
     };
 
-    private final RestClient.Builder restClientBuilder;
+    private final RestClient baseClient;
+
+    public GitHubApiClient(RestClient.Builder restClientBuilder) {
+        this.baseClient = restClientBuilder
+                .baseUrl(GITHUB_BASE_API)
+                .defaultHeader(HttpHeaders.ACCEPT, "application/vnd.github+json")
+                .defaultHeader("X-GitHub-Api-Version", "2022-11-28")
+                .defaultHeader(HttpHeaders.USER_AGENT, "CodeMind")
+                .build();
+    }
 
     public List<Map<String, Object>> listUserRepos(String accessToken) {
         List<Map<String, Object>> all = new ArrayList<>();
@@ -83,13 +90,10 @@ public class GitHubApiClient {
                 .body(MAP);
     }
 
+    // mutate() creates a NEW builder from the immutable baseClient — thread-safe.
     private RestClient client(String accessToken) {
-        return restClientBuilder
-                .baseUrl(GITHUB_BASE_API)
+        return baseClient.mutate()
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-                .defaultHeader(HttpHeaders.ACCEPT, "application/vnd.github+json")
-                .defaultHeader("X-GitHub-Api-Version", "2022-11-28")
-                .defaultHeader(HttpHeaders.USER_AGENT, "CodeMind")
                 .build();
     }
 }

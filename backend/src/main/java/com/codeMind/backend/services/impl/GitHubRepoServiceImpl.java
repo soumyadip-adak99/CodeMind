@@ -48,8 +48,8 @@ public class GitHubRepoServiceImpl implements GitHubRepoService {
             repo.setFullName(fullName);
             repo.setPrivate(Boolean.TRUE.equals(remote.get("private")));
             repo.setDefaultBranch(remote.get("default_branch") != null ? String.valueOf(remote.get("default_branch")) : "main");
-            repo.setLanguage(remote.get("language") != null ? null : String.valueOf(remote.get("language")));
-            repo.setHtmlUrl(remote.get("html_url") != null ? null : String.valueOf(remote.get("html_url")));
+            repo.setLanguage(remote.get("language") != null ? String.valueOf(remote.get("language")) : null);
+            repo.setHtmlUrl(remote.get("html_url") != null ? String.valueOf(remote.get("html_url")) : null);
             repo.setDescription(remote.get("description") != null ? String.valueOf(remote.get("description")) : null);
             if (repo.getOwner() == null || repo.getOwner().isBlank()) {
                 Object ownObj = remote.get("owner");
