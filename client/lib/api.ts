@@ -1,15 +1,10 @@
-import type { User, ApiErrorResponse } from "@/@type/index";
+import { type User, type ApiErrorResponse, Repository, IndexStatusResponse } from "@/@type/index";
 
-// ─── Base URL ────────────────────────────────────────────────────────────────
-
-export const BACKEND_BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+export const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 export const BACKEND_GITHUB_LOGIN_URL = `${BACKEND_BASE_URL}/oauth2/authorization/github`;
 
 export type { ApiErrorResponse };
-
-// ─── Core fetch ──────────────────────────────────────────────────────────────
 
 export class ApiError extends Error {
     status: number;
@@ -24,27 +19,22 @@ export class ApiError extends Error {
         this.timestamp = response.timestamp;
     }
 
-    /** True when the user is not authenticated (401) */
     get isUnauthorized() {
         return this.status === 401;
     }
 
-    /** True when the resource was not found (404) */
     get isNotFound() {
         return this.status === 404;
     }
 
-    /** True when validation/bad input (400) */
     get isBadRequest() {
         return this.status === 400;
     }
 
-    /** True when the server crashed (5xx) */
     get isServerError() {
         return this.status >= 500;
     }
 }
-
 
 async function parseErrorResponse(res: Response): Promise<ApiErrorResponse> {
     const fallback: ApiErrorResponse = {
@@ -97,24 +87,14 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     return JSON.parse(text) as T;
 }
 
-// ─── Auth API ─────────────────────────────────────────────────────────────────
-
 export const api = {
-    /**
-     * GET /api/auth/me
-     * Returns the currently authenticated user.
-     * Throws ApiError with status 401 if not authenticated.
-     */
-    me: (): Promise<User> =>
-        apiFetch<User>("/api/auth/me"),
-
-    /**
-     * POST /api/auth/logout
-     * Invalidates the server session and clears CODEMIND_SESSION cookie.
-     * Returns 204 No Content on success.
-     */
+    me: (): Promise<User> => apiFetch<User>("/api/auth/me"),
     logout: (): Promise<void> =>
         apiFetch<void>("/api/auth/logout", {
             method: "POST",
         }),
+    listRepos: (refresh = true) => apiFetch<Repository[]>(`/api/repos?refresh=${refresh}`),
+    getRepo: (id: string) => apiFetch<Repository>(`/api/repos/${id}`),
+    startIndex: (id: string) => apiFetch<Repository>(`/api/repos/${id}/index`, { method: "POST" }),
+    indexStatus: (id: string) => apiFetch<IndexStatusResponse>(`/api/repos/${id}/status`),
 };
