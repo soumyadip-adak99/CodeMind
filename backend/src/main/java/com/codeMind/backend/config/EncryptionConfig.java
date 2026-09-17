@@ -8,7 +8,6 @@ import org.springframework.security.crypto.encrypt.AesCbcBytesEncryptor;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.util.Base64;
 
 @Configuration
@@ -25,9 +24,6 @@ public class EncryptionConfig {
         AesCbcBytesEncryptor bytesEncryptor = AesCbcBytesEncryptor.withPassword(password, salt).build();
 
         return new TextEncryptor() {
-            // AesCbcBytesEncryptor is NOT thread-safe (Cipher + SecureRandom IV state).
-            // synchronized ensures only one thread at a time enters the encryptor,
-            // preventing IllegalBlockSizeException and silent token corruption.
             @Override
             public synchronized @NonNull String encrypt(@NonNull String text) {
                 byte[] encrypted = bytesEncryptor.encrypt(text.getBytes(StandardCharsets.UTF_8));
