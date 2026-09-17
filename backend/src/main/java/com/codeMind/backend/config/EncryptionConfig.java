@@ -25,14 +25,17 @@ public class EncryptionConfig {
         AesCbcBytesEncryptor bytesEncryptor = AesCbcBytesEncryptor.withPassword(password, salt).build();
 
         return new TextEncryptor() {
+            // AesCbcBytesEncryptor is NOT thread-safe (Cipher + SecureRandom IV state).
+            // synchronized ensures only one thread at a time enters the encryptor,
+            // preventing IllegalBlockSizeException and silent token corruption.
             @Override
-            public @NonNull String encrypt(@NonNull String text) {
+            public synchronized @NonNull String encrypt(@NonNull String text) {
                 byte[] encrypted = bytesEncryptor.encrypt(text.getBytes(StandardCharsets.UTF_8));
                 return Base64.getEncoder().encodeToString(encrypted);
             }
 
             @Override
-            public @NonNull String decrypt(@NonNull String encryptedText) {
+            public synchronized @NonNull String decrypt(@NonNull String encryptedText) {
                 byte[] decoded = Base64.getDecoder().decode(encryptedText);
                 byte[] decrypted = bytesEncryptor.decrypt(decoded);
                 return new String(decrypted, StandardCharsets.UTF_8);

@@ -2,7 +2,7 @@ package com.codeMind.backend.constant;
 
 public class AppConstant {
 
-    public static String[] PUBLIC_ENDPOINTS = {
+    public static final String[] PUBLIC_ENDPOINTS = {
             "/api/auth/login-url",
             "/api/auth/logout",
             "/oauth2/**",

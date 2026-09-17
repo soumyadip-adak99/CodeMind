@@ -98,4 +98,9 @@ public class GitHubRepository {
             indexStatus = IndexStatus.PENDING;
         }
     }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = Instant.now();
+    }
 }
