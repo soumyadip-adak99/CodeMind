@@ -2,8 +2,10 @@ package com.codeMind.backend.controller;
 
 import com.codeMind.backend.dto.GitHubRepositoryResponse;
 import com.codeMind.backend.dto.IndexStatusResponse;
+import com.codeMind.backend.entity.GitHubRepository;
 import com.codeMind.backend.security.CurrentUser;
 import com.codeMind.backend.services.GitHubRepoService;
+import com.codeMind.backend.services.IndexingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ public class RepoController {
 
     private final CurrentUser currentUser;
     private final GitHubRepoService repoService;
+    private final IndexingService indexingService;
 
     @GetMapping
     public ResponseEntity<List<GitHubRepositoryResponse>> getListOfRepos(
@@ -36,6 +39,14 @@ public class RepoController {
     public ResponseEntity<GitHubRepositoryResponse> getGithubRepository(@PathVariable UUID id) {
         UUID userId = currentUser.require().getId();
         return new ResponseEntity<>(repoService.toResponse(repoService.requireOwned(id, userId)), HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}/index")
+    public ResponseEntity<GitHubRepositoryResponse> index(@PathVariable UUID id) {
+        UUID userId = currentUser.require().getId();
+        GitHubRepository repo = indexingService.startIndexing(id, userId);
+        indexingService.indexAsync(id, userId);
+        return new ResponseEntity<>(repoService.toResponse(repo), HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/{id}/status")

@@ -1,4 +1,4 @@
-package com.codeMind.backend.services.impl;
+package com.codeMind.backend.services.implementation;
 
 import com.codeMind.backend.entity.User;
 import com.codeMind.backend.repository.UserRepository;
