@@ -1,12 +1,12 @@
 ﻿"use client"
 
 import { RequiredAuth } from "@/components/provider/required-auth"
-import { RepoDashboard } from "@/components/dashboard/repo-dashboard"
+import { SettingsDashboard } from "@/components/dashboard/settings-dashboard"
 
-export default function DashboardPage() {
+export default function SettingsPage() {
     return (
         <RequiredAuth>
-            <RepoDashboard />
+            <SettingsDashboard />
         </RequiredAuth>
     )
 }

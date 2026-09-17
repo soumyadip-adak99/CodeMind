@@ -14,9 +14,9 @@ import java.util.UUID;
 public class UserResponse {
     private UUID id;
 
-    private Long gitHubId;
+    private Long githubId;
 
-    private String gitHubUserName;
+    private String githubUsername;
 
     private String displayName;
 

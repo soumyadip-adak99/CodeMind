@@ -41,3 +41,33 @@ export interface ApiErrorResponse {
     message: string;
     timestamp: string;
 }
+
+export type IndexStatus = "PENDING" | "INDEXING" | "READY" | "FAILED";
+
+export type Repository = {
+    id: string;
+    githubRepoId: number;
+    owner: string;
+    name: string;
+    fullName: string;
+    isPrivate: boolean;
+    defaultBranch: string;
+    language: string | null;
+    htmlUrl: string | null;
+    indexStatus: IndexStatus;
+    indexedAt: string | null;
+    chunkCount: number;
+    filesTotal: number;
+    filesProcessed: number;
+    errorMessage: string | null;
+};
+
+export type IndexStatusResponse = {
+    repositoryId: string;
+    indexStatus: IndexStatus;
+    filesTotal: number;
+    filesProcessed: number;
+    chunkCount: number;
+    indexedAt: string | null;
+    errorMessage: string | null;
+};
