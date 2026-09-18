@@ -1,7 +1,7 @@
 package com.codeMind.backend.services.implementation;
 
-import com.codeMind.backend.dto.GitHubRepositoryResponse;
-import com.codeMind.backend.dto.IndexStatusResponse;
+import com.codeMind.backend.dto.response.GitHubRepositoryResponse;
+import com.codeMind.backend.dto.response.IndexStatusResponse;
 import com.codeMind.backend.entity.GitHubRepository;
 import com.codeMind.backend.entity.User;
 import com.codeMind.backend.exceptions.NotFoundException;
