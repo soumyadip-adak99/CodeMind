@@ -1,7 +1,7 @@
 package com.codeMind.backend.controller;
 
-import com.codeMind.backend.dto.GitHubRepositoryResponse;
-import com.codeMind.backend.dto.IndexStatusResponse;
+import com.codeMind.backend.dto.response.GitHubRepositoryResponse;
+import com.codeMind.backend.dto.response.IndexStatusResponse;
 import com.codeMind.backend.entity.GitHubRepository;
 import com.codeMind.backend.security.CurrentUser;
 import com.codeMind.backend.services.GitHubRepoService;

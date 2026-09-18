@@ -1,4 +1,4 @@
-package com.codeMind.backend.dto;
+package com.codeMind.backend.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

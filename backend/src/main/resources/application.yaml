@@ -29,14 +29,14 @@ spring:
       chat:
         model: openai/gpt-oss-20b
       embedding:
-        model: text-embedding-3-small
+        model: nvidia/nemotron-3-embed-1b
       base-url: ${OPEN_AI_BASE_URL}
 
     vectorstore:
       pgvector:
         initialize-schema: true
-        dimensions: 1536
-        index-type: HNSW
+        dimensions: 2048
+        index-type: NONE
         distance-type: COSINE_DISTANCE
 
 

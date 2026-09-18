@@ -125,7 +125,7 @@ export function RepoCard({ repo, onStartIndexing, isIndexingLoading, className }
                         <Button
                             size="sm"
                             nativeButton={false}
-                            render={<Link href={`/dashboard/chat/${repo.id}`} />}
+                            render={<Link href={`/chat/${repo.id}`} />}
                         >
                             <MessageSquare className="size-3.5 mr-1.5" />
                             Chat with code
