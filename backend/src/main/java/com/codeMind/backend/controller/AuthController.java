@@ -1,7 +1,7 @@
 package com.codeMind.backend.controller;
 
 import com.codeMind.backend.constant.AppConstant;
-import com.codeMind.backend.dto.UserResponse;
+import com.codeMind.backend.dto.response.UserResponse;
 import com.codeMind.backend.entity.User;
 import com.codeMind.backend.security.AppUserPrincipal;
 import com.codeMind.backend.security.CurrentUser;
