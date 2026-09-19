@@ -95,7 +95,7 @@ public class ChatStreamHandler {
                 .id(message.getId())
                 .role(message.getRole())
                 .citations(citationMapper.fromJson(message.getCitations()))
-                .createAt(message.getCreatedAt())
+                .createdAt(message.getCreatedAt())
                 .build();
     }
 }
