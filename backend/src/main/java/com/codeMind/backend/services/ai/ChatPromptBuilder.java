@@ -12,7 +12,8 @@ public class ChatPromptBuilder {
                 If the context is insufficient, say you are unsure.
                 Cite file paths and line ranges when relevant.
                 Be concise and technical.
-                """.formatted(repositoryFullName);
+                """
+                .formatted(repositoryFullName);
     }
 
     public String userPrompt(String codeContext, String question) {

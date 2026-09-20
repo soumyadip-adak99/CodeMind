@@ -78,6 +78,16 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ChatMessageResponse> getMessages(UUID userId, UUID sessionId) {
+        ChatSession session = requiredSession(userId, sessionId);
+        return chatMessageRepository.findBySessionIdOrderByCreatedAtAsc(session.getId())
+                .stream()
+                .map(this::toMessageResponse)
+                .toList();
+    }
+
+    @Override
     public SseEmitter streamReply(UUID userId, UUID sessionId, String userContent) {
         ChatSession session = requiredSession(userId, sessionId);
         GitHubRepository repo = repoService.requireOwned(session.getRepositoryId(), userId);
@@ -116,6 +126,7 @@ public class ChatServiceImpl implements ChatService {
         return ChatMessageResponse.builder()
                 .id(message.getId())
                 .role(message.getRole())
+                .content(message.getContent())
                 .citations(citationMapper.fromJson(message.getCitations()))
                 .createdAt(message.getCreatedAt())
                 .build();

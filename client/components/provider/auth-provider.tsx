@@ -19,6 +19,7 @@ const PUBLIC_PATHS = ["/login", "/auth/callback"];
  */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fetchUser = useAuthStore((s) => s.fetchUser);
+    const setUser = useAuthStore((s) => s.setUser);
     const pathname = usePathname();
 
     const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
@@ -26,9 +27,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!isPublicPath) {
             fetchUser();
+        } else {
+            // We skip fetchUser on /login to avoid creating empty sessions,
+            // but we must resolve the initial "loading" state so the UI renders.
+            setUser(null);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [isPublicPath]);
 
     return <>{children}</>;
 }

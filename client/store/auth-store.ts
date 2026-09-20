@@ -1,10 +1,10 @@
 "use client";
 
 import { create } from "zustand";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import type { User } from "@/@type/index";
 
-type AuthStatus = "loading" | "authenticated" | "unauthenticated";
+type AuthStatus = "loading" | "authenticated" | "unauthenticated" | "error";
 
 interface AuthState {
     user: User | null;
@@ -30,8 +30,13 @@ export const useAuthStore = create<AuthState>((set) => ({
             const user = await api.me();
             set({ user, status: "authenticated" });
         } catch (err) {
-            // Any failure (401, network error, etc.) → treat as unauthenticated
-            set({ user: null, status: "unauthenticated" });
+            if (err instanceof ApiError && err.isUnauthorized) {
+                // The session is invalid
+                set({ user: null, status: "unauthenticated" });
+            } else {
+                // Network error, backend offline, or 500 error
+                set({ user: null, status: "error" });
+            }
         }
     },
 
@@ -45,7 +50,8 @@ export const useAuthStore = create<AuthState>((set) => ({
             set({ user: null, status: "unauthenticated" });
             // Hard redirect so the browser discards all React state
             // and the middleware re-evaluates the session cookie.
-            window.location.href = "/login";
+            // ?clear=1 forces the middleware to drop the cookie even if backend logout failed.
+            window.location.href = "/login?clear=1";
         }
     },
 }));

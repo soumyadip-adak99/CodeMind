@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FolderGit2, RefreshCw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -139,12 +140,20 @@ export function RepoDashboard() {
     const refreshRepos = useRefreshRepos();
     const startIndexing = useStartIndexing();
 
+    const router = useRouter();
+
     const [search, setSearch] = useState("");
     const [visibility, setVisibility] = useState<VisibilityFilter>("all");
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
     const handleRefresh = () => refreshRepos.mutate();
-    const handleStartIndexing = (repoId: string) => startIndexing.mutate(repoId);
+    const handleStartIndexing = (repoId: string) => {
+        startIndexing.mutate(repoId, {
+            onSuccess: () => {
+                router.push(`/dashboard/repos/${repoId}/indexing`);
+            }
+        });
+    };
 
     const filtered = useMemo(
         () => (repos ? applyFilters(repos, search, visibility, statusFilter) : []),

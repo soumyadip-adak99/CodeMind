@@ -1,6 +1,5 @@
 package com.codeMind.backend.entity;
 
-import com.codeMind.backend.enums.IndexStatus;
 import com.codeMind.backend.enums.MessageRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

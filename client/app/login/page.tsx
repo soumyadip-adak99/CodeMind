@@ -1,12 +1,14 @@
 "use client";
+import { useAuthStatus } from "@/hooks/use-auth";
 
 import { useMutation } from "@tanstack/react-query";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { GitHubIcon } from "@/components/icons/github-icon";
-import { BrandMark } from "@/components/layout/app-shell";
+
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,6 +41,8 @@ function LoginContent() {
     const searchParams = useSearchParams();
     const errorParam = searchParams.get("error");
 
+    const status = useAuthStatus();
+
     // Store the error in state so it persists after clearing the URL
     const [oauthError, setOauthError] = useState<string | null>(errorParam);
 
@@ -54,13 +58,31 @@ function LoginContent() {
         }
     }, [errorParam, router]);
 
+    useEffect(() => {
+        if (status === "authenticated") {
+            router.replace("/dashboard");
+        }
+    }, [status, router]);
+
     // Trigger GitHub OAuth flow
     const loginMutation = useMutation({
         mutationFn: async () => {
-            await new Promise((resolve) => setTimeout(resolve, 800));
-            router.push(BACKEND_GITHUB_LOGIN_URL);
+            window.location.href = BACKEND_GITHUB_LOGIN_URL;
+            // Never resolve to keep the button in loading state until the page unloads
+            await new Promise(() => {});
         },
     });
+
+    if (status === "loading" || status === "authenticated") {
+        return (
+            <div className="flex flex-col space-y-6 w-full max-w-md mx-auto relative z-10 items-center justify-center py-20">
+                <Spinner className="h-10 w-10 text-primary mb-4" />
+                <p className="text-muted-foreground animate-pulse font-medium">
+                    {status === "loading" ? "Checking authentication..." : "Redirecting to dashboard..."}
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col space-y-6 w-full max-w-md mx-auto relative z-10">
@@ -124,6 +146,13 @@ export default function LoginPage() {
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
                 <div className="absolute top-[-25%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px]" />
                 <div className="absolute top-[60%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px]" />
+            </div>
+
+            <div className="absolute top-4 left-4 z-50">
+                <Link href="/" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted-foreground hover:text-foreground")}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to home
+                </Link>
             </div>
 
             <div className="absolute top-4 right-4 z-50">
