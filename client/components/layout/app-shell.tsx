@@ -1,4 +1,3 @@
-import type { SVGProps } from "react";
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -36,7 +35,6 @@ import {
 
 import { dashboardNavGroups, isDashboardNavActive } from "@/lib/dashboard-nav";
 
-import { cn } from "@/lib/utils";
 import { useCurrentUser, useLogout } from "@/hooks/use-auth";
 
 export function AppShell({
@@ -67,12 +65,12 @@ export function AppShell({
                                 render={<Link href="/dashboard" />}
                                 tooltip="CodeMind"
                             >
-                                <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">
-                                    <CodeMindIcon className="size-9" />
+                                <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
+                                    <CodeMindIcon className="size-6" />
                                 </div>
-                                <div className="flex flex-col flex-1 text-left text-xl leading-tight ml-1">
-                                    <span className="truncate font-semibold">CodeMind</span>
-                                    <span className="truncate text-sm">Chat your code</span>
+                                <div className="flex flex-col flex-1 text-left text-xl leading-tight ml-2">
+                                    <span className="truncate font-bold tracking-tight">CodeMind</span>
+                                    <span className="truncate text-xs font-medium text-muted-foreground uppercase tracking-wider">Workspace</span>
                                 </div>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -223,80 +221,5 @@ export function AppShell({
                 <div className="flex flex-1 flex-col gap-4 p-4 pt-0 md:p-8 mt-4">{children}</div>
             </SidebarInset>
         </SidebarProvider>
-    );
-}
-
-export function BrandMark({ className, ...props }: SVGProps<SVGSVGElement>) {
-    return (
-        <svg
-            viewBox="0 0 48 48"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className={className}
-            aria-label="CodeMind"
-            role="img"
-            {...props}
-        >
-            {/* Brain / Mind */}
-            <path
-                d="
-          M18 10
-          C14.5 8 10.5 10 10.5 14
-          C7.5 14.5 6 17 7 19.5
-          C4.5 21 4 24.5 6.5 26.5
-          C5 29.5 7 32.5 10 32.5
-          C10 36 13 38 16 37
-          C17 40 20 41 22 39.5
-          M30 10
-          C33.5 8 37.5 10 37.5 14
-          C40.5 14.5 42 17 41 19.5
-          C43.5 21 44 24.5 41.5 26.5
-          C43 29.5 41 32.5 38 32.5
-          C38 36 35 38 32 37
-          C31 40 28 41 26 39.5
-        "
-                stroke="currentColor"
-                strokeWidth="2.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-
-            {/* Left code bracket < */}
-            <path
-                d="M20 19L15 24L20 29"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-
-            {/* Code slash / */}
-            <path d="M27 18L22 30" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-
-            {/* Right code bracket > */}
-            <path
-                d="M28 19L33 24L28 29"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-        </svg>
-    );
-}
-
-export function GhostButtonLink({
-    href,
-    children,
-    className,
-}: {
-    href: string;
-    children: React.ReactNode;
-    className?: string;
-}) {
-    return (
-        <Button variant="ghost" size="sm" className={className} render={<Link href={href} />}>
-            {children}
-        </Button>
     );
 }

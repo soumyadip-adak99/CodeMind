@@ -10,26 +10,29 @@ import { NextResponse } from "next/server";
 const SESSION_COOKIE = "CODEMIND_SESSION";
 
 // Routes that do NOT require authentication
-const PUBLIC_PATHS = ["/login", "/auth/callback"];
+const PUBLIC_PATHS = ["/", "/login", "/auth/callback"];
 
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const isAuthenticated = request.cookies.has(SESSION_COOKIE);
 
-    // Root "/" → redirect based on auth state
-    if (pathname === "/") {
-        const dest = isAuthenticated ? "/dashboard" : "/login";
-        return NextResponse.redirect(new URL(dest, request.url));
-    }
-
-    const isPublicPath = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
+    const isPublicPath = PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(path + "/") || (path !== "/" && pathname.startsWith(path)));
 
     if (isPublicPath) {
         // Authenticated users hitting /login → bounce to dashboard
         if (pathname === "/login" && isAuthenticated) {
+            const clear = request.nextUrl.searchParams.get("clear");
+            if (clear === "1") {
+                // The frontend explicitly requested to clear the cookie (e.g. 401 response).
+                // Returning NextResponse.next() here allows the login page to load,
+                // and deleting the cookie ensures subsequent requests don't loop.
+                const response = NextResponse.next();
+                response.cookies.delete(SESSION_COOKIE);
+                return response;
+            }
             return NextResponse.redirect(new URL("/dashboard", request.url));
         }
-        // All other public paths (e.g. /auth/callback) → allow through
+        // All other public paths (e.g. /auth/callback, /) → allow through
         return NextResponse.next();
     }
 

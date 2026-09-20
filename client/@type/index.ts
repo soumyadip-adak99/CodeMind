@@ -38,7 +38,7 @@ export type DashboardNavGroup = {
 export interface ApiErrorResponse {
     status: number;
     error: string;
-    message: string;
+    message: string ;
     timestamp: string;
 }
 
@@ -70,4 +70,40 @@ export type IndexStatusResponse = {
     chunkCount: number;
     indexedAt: string | null;
     errorMessage: string | null;
+};
+
+// ─── Chat ─────────────────────────────────────────────────────────────────────
+
+export type ChatSession = {
+    id: string;
+    repositoryId: string;
+    title: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type Citation = {
+    filePath: string;
+    startLine: number | null;
+    endLine: number | null;
+    language: string | null;
+};
+
+export type ChatMessage = {
+    id: string;
+    sessionId: string;
+    role: "user" | "assistant";
+    content: string;
+    citations: Citation[];
+    createdAt: string;
+};
+
+// stream
+export type StreamChatHandlers = {
+    onUserMessage?: (message: ChatMessage) => void;
+    onToken?: (token: string) => void;
+    onAssistantMessage?: (message: ChatMessage) => void;
+    onDone?: () => void;
+    onError?: (error: Error) => void;
+    signal?: AbortSignal;
 };

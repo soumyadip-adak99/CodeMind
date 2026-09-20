@@ -2,8 +2,7 @@
 
 import { Suspense, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-
-import { BrandMark } from "@/components/layout/app-shell";
+import { CodeMindIcon } from "@/components/icons/code-mind";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuthStore } from "@/store/auth-store";
 
@@ -49,6 +48,9 @@ function AuthCallbackContent() {
         } else if (status === "unauthenticated") {
             navigated.current = true;
             window.location.href = "/login?error=oauth2_error";
+        } else if (status === "error") {
+            navigated.current = true;
+            window.location.href = "/login?error=server_offline";
         }
     }, [status, user]);
 
@@ -59,8 +61,7 @@ function AuthCallbackContent() {
                 <div className="absolute top-[-25%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px]" />
                 <div className="absolute top-[60%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px]" />
             </div>
-
-            <BrandMark className="h-12 w-12 text-primary animate-pulse" />
+            <CodeMindIcon className="h-12 w-12 text-primary animate-pulse" />
 
             <div className="flex items-center gap-2">
                 <Spinner className="size-5 text-primary" />

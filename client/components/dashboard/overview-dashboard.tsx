@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMemo } from "react";
 import { CheckCircle, Clock, FileCode2, FolderGit2, Layers, XCircle } from "lucide-react";

@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuthStore } from "@/store/auth-store";
 import { Spinner } from "../ui/spinner";
+import { Button } from "../ui/button";
+import { AlertCircle } from "lucide-react";
 
 /**
  * RequiredAuth
@@ -16,6 +18,12 @@ export function RequiredAuth({ children }: { children: React.ReactNode }) {
     const status = useAuthStore((s) => s.status);
     const user = useAuthStore((s) => s.user);
 
+    useEffect(() => {
+        if (status === "unauthenticated" || (status !== "loading" && status !== "error" && !user)) {
+            window.location.href = "/login?clear=1";
+        }
+    }, [status, user]);
+
     if (status === "loading") {
         return (
             <div className="flex h-[100dvh] w-full flex-col items-center justify-center gap-4">
@@ -25,10 +33,19 @@ export function RequiredAuth({ children }: { children: React.ReactNode }) {
         );
     }
 
+    if (status === "error") {
+        return (
+            <div className="flex h-[100dvh] w-full flex-col items-center justify-center gap-4">
+                <AlertCircle className="size-8 text-destructive" />
+                <p className="text-sm text-muted-foreground">Unable to connect to the server.</p>
+                <Button onClick={() => window.location.reload()} variant="outline">
+                    Retry
+                </Button>
+            </div>
+        );
+    }
+
     if (status === "unauthenticated" || !user) {
-        // Middleware should catch this before the page renders,
-        // but as a safety net, hard-redirect from the client too.
-        window.location.href = "/login";
         return null;
     }
 
