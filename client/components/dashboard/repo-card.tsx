@@ -130,19 +130,24 @@ export function RepoCard({ repo, onStartIndexing, isIndexingLoading, className }
                             <MessageSquare className="size-3.5 mr-1.5" />
                             Chat with code
                         </Button>
+                    ) : isIndexing ? (
+                        <Button
+                            size="sm"
+                            variant="secondary"
+                            nativeButton={false}
+                            render={<Link href={`/dashboard/repos/${repo.id}/indexing`} />}
+                        >
+                            <RefreshCw className="size-3.5 mr-1.5 animate-spin" />
+                            View indexing status
+                        </Button>
                     ) : (
                         <Button
                             size="sm"
                             variant={isFailed ? "outline" : "default"}
-                            disabled={isIndexing || isIndexingLoading}
+                            disabled={isIndexingLoading}
                             onClick={() => onStartIndexing(repo.id)}
                         >
-                            {isIndexing ? (
-                                <>
-                                    <RefreshCw className="size-3.5 mr-1.5 animate-spin" />
-                                    Indexing...
-                                </>
-                            ) : isFailed ? (
+                            {isFailed ? (
                                 <>
                                     <RefreshCw className="size-3.5 mr-1.5" />
                                     Retry indexing

@@ -3,7 +3,7 @@ package com.codeMind.backend.services.ai;
 public final class RagSettings {
 
     // how many code chunks to fetch from the vector database per question
-    public static final int TOP_K_CHUNKS = 0;
+    public static final int TOP_K_CHUNKS = 10;
 
     // max time (ms) to keep an SSE stream open while the model is responding.
     public static final long STREAM_TIMEOUT_MS = 180_000L;

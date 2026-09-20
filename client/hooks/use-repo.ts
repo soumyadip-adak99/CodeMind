@@ -35,6 +35,14 @@ export function useRepos() {
     });
 }
 
+export function useRepo(id: string) {
+    return useQuery({
+        queryKey: queryKeys.repos.detail(id),
+        queryFn: () => api.getRepo(id),
+        enabled: Boolean(id),
+    });
+}
+
 export function useIndexStatus(repoId: string, enabled = false) {
     return useQuery({
         queryKey: queryKeys.repos.status(repoId),
@@ -51,6 +59,11 @@ export function useStartIndexing() {
         onSuccess: (repo) => {
             queryClient.setQueryData(queryKeys.repos.detail(repo.id), repo);
             updateRepoInListCache(queryClient, repo);
+            queryClient.setQueryData(queryKeys.repos.status(repo.id), {
+                indexStatus: repo.indexStatus,
+                filesProcessed: repo.filesProcessed,
+                filesTotal: repo.filesTotal,
+            });
             void queryClient.invalidateQueries({
                 queryKey: queryKeys.repos.status(repo.id),
             });

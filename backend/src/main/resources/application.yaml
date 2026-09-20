@@ -25,19 +25,37 @@ spring:
 
   ai:
     openai:
-      api-key: ${NVDIA_OPEN_AI_API_KEY}
+      api-key: ${OPEN_API_KEY}
       chat:
-        model: openai/gpt-oss-20b
+        model: gpt-4o-mini
       embedding:
-        model: nvidia/nemotron-3-embed-1b
-      base-url: ${OPEN_AI_BASE_URL}
+        model: text-embedding-3-small
 
     vectorstore:
       pgvector:
         initialize-schema: true
-        dimensions: 2048
-        index-type: NONE
+        dimensions: 1536
+        index-type: HNSW
         distance-type: COSINE_DISTANCE
+
+  #    ai:
+  #      google:
+  #        genai:
+  #          api-key: ${GEMINI_API_KEY}
+  #          chat:
+  #            options:
+  #              model: gemini-2.5-flash
+  #          embedding:
+  #            text:
+  #              options:
+  #                model: gemini-embedding-001
+  #
+  #      vectorstore:
+  #        pgvector:
+  #          initialize-schema: true
+  #          dimensions: 3072
+  #          index-type: NONE
+  #          distance-type: COSINE_DISTANCE
 
 
   # GitHub oauth2 related configs

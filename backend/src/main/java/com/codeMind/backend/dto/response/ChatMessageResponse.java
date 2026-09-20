@@ -18,6 +18,7 @@ import java.util.UUID;
 public class ChatMessageResponse {
     private UUID id;
     private MessageRole role;
+    private String content;
     private List<CitationDto> citations;
     private Instant createdAt;
 }

@@ -1,10 +1,21 @@
-import { type User, type ApiErrorResponse, Repository, IndexStatusResponse } from "@/@type/index";
+import {
+    type User,
+    type ApiErrorResponse,
+    type Repository,
+    type IndexStatusResponse,
+    type ChatSession,
+    type ChatMessage,
+} from "@/@type/index";
 
 export const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 export const BACKEND_GITHUB_LOGIN_URL = `${BACKEND_BASE_URL}/oauth2/authorization/github`;
 
 export type { ApiErrorResponse };
+
+export function getApiBaseUrl():string {
+    return BACKEND_BASE_URL;
+}
 
 export class ApiError extends Error {
     status: number;
@@ -88,6 +99,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 }
 
 export const api = {
+    loginUrl: (): Promise<{ url: string }> => apiFetch<{ url: string }>("/api/auth/login-url"),
     me: (): Promise<User> => apiFetch<User>("/api/auth/me"),
     logout: (): Promise<void> =>
         apiFetch<void>("/api/auth/logout", {
@@ -97,4 +109,25 @@ export const api = {
     getRepo: (id: string) => apiFetch<Repository>(`/api/repos/${id}`),
     startIndex: (id: string) => apiFetch<Repository>(`/api/repos/${id}/index`, { method: "POST" }),
     indexStatus: (id: string) => apiFetch<IndexStatusResponse>(`/api/repos/${id}/status`),
+    createSession: (repositoryId: string, title?: string) =>
+        apiFetch<ChatSession>("/api/chat/sessions", {
+            method: "POST",
+            body: JSON.stringify({ repositoryId, title }),
+        }),
+    listSessions: (repositoryId: string) =>
+        apiFetch<ChatSession[]>(
+            `/api/chat/sessions?repositoryId=${encodeURIComponent(repositoryId)}`
+        ),
+    getMessages: (sessionId: string) => apiFetch<ChatMessage[]>(`/api/chat/sessions/${sessionId}`),
+    sendMessage: async (sessionId: string, content: string) => {
+        const url = `${BACKEND_BASE_URL.replace(/\/$/, "")}/api/chat/sessions/${sessionId}/messages`;
+        return fetch(url, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ content }),
+        });
+    },
 };
