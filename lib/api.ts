@@ -7,7 +7,7 @@ import {
     type ChatMessage,
 } from "@/@type/index";
 
-export const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+export const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
 export const BACKEND_GITHUB_LOGIN_URL = `${BACKEND_BASE_URL}/oauth2/authorization/github`;
 

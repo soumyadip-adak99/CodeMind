@@ -18,7 +18,7 @@ export function HowItWorks() {
     });
 
     useEffect(() => {
-        return scrollYProgress.onChange((v) => {
+        return scrollYProgress.on("change", (v) => {
             setScrollProgress(v);
             
             // Determine stage based on scroll progress
