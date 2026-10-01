@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { CheckCircle2, MessageSquareCode } from "lucide-react";
 
 interface LandingHeroProps {
     isAuthenticated?: boolean;
@@ -16,49 +14,6 @@ export function LandingHero({ isAuthenticated }: LandingHeroProps) {
             {/* Simple, sleek CSS background */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
             <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-20 blur-[100px]"></div>
-            
-            {/* Floating Glassmorphism Cards */}
-            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                <motion.div 
-                    initial={{ opacity: 0, x: -50, y: 0 }}
-                    animate={{ opacity: 1, x: 0, y: [0, -20, 0] }} 
-                    transition={{ 
-                        opacity: { duration: 0.8, delay: 0.2 },
-                        x: { type: "spring", stiffness: 50, delay: 0.2 },
-                        y: { duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 } 
-                    }}
-                    className="hidden lg:flex absolute top-1/4 left-[10%] bg-card/60 backdrop-blur-2xl border border-white/10 p-4 rounded-2xl shadow-2xl items-center gap-4 w-64"
-                >
-                    <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                    </div>
-                    <div>
-                        <div className="text-sm font-semibold text-foreground">CodeMind Indexed</div>
-                        <div className="text-xs text-muted-foreground">3,204 files processed</div>
-                    </div>
-                </motion.div>
-
-                <motion.div 
-                    initial={{ opacity: 0, x: 50, y: 0 }}
-                    animate={{ opacity: 1, x: 0, y: [0, 20, 0] }} 
-                    transition={{ 
-                        opacity: { duration: 0.8, delay: 0.4 },
-                        x: { type: "spring", stiffness: 50, delay: 0.4 },
-                        y: { duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1.5 } 
-                    }}
-                    className="hidden lg:flex absolute bottom-1/3 right-[10%] bg-card/60 backdrop-blur-2xl border border-white/10 p-4 rounded-2xl shadow-2xl items-start gap-4 w-72"
-                >
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30 mt-1">
-                        <MessageSquareCode className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                        <div className="text-sm font-semibold text-foreground mb-1">How does auth work?</div>
-                        <div className="text-xs text-muted-foreground leading-relaxed">
-                            "Authentication uses JWT tokens verified via <code className="bg-muted px-1 rounded">JwtAuthFilter</code>..."
-                        </div>
-                    </div>
-                </motion.div>
-            </div>
 
             <div className="container mx-auto px-4 md:px-6 relative z-10 mt-4">
                 <div className="max-w-4xl mx-auto text-center flex flex-col items-center">

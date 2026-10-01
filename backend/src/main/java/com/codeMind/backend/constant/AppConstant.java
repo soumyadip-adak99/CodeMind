@@ -5,6 +5,7 @@ public class AppConstant {
     public static final String[] PUBLIC_ENDPOINTS = {
             "/api/auth/login-url",
             "/api/auth/logout",
+            "/api/auth/exchange",
             "/oauth2/**",
             "/login/oauth2/**",
             "/error"

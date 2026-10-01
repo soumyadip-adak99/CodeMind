@@ -7,14 +7,21 @@ import {
     type ChatMessage,
 } from "@/@type/index";
 
-export const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-
-export const BACKEND_GITHUB_LOGIN_URL = `${BACKEND_BASE_URL}/oauth2/authorization/github`;
+export const BACKEND_BASE_URL = "";
+export const BACKEND_GITHUB_LOGIN_URL = "/oauth2/authorization/github";
 
 export type { ApiErrorResponse };
 
-export function getApiBaseUrl():string {
+export function getApiBaseUrl(): string {
     return BACKEND_BASE_URL;
+}
+
+function getCookie(name: string): string | null {
+    if (typeof document === 'undefined') return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift() ?? null;
+    return null;
 }
 
 export class ApiError extends Error {
@@ -70,24 +77,83 @@ async function parseErrorResponse(res: Response): Promise<ApiErrorResponse> {
     }
 }
 
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-    const url = `${BACKEND_BASE_URL.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
+let isRefreshing = false;
+let refreshSubscribers: ((error: Error | null) => void)[] = [];
+
+function onRefreshed(error: Error | null = null) {
+    refreshSubscribers.forEach((cb) => cb(error));
+    refreshSubscribers = [];
+}
+
+function addRefreshSubscriber(cb: (error: Error | null) => void) {
+    refreshSubscribers.push(cb);
+}
+
+export async function apiFetchRaw(path: string, init?: RequestInit): Promise<Response> {
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    const url = normalizedPath;
+    
+    const headers = new Headers(init?.headers);
+    if (!headers.has("Content-Type")) {
+        headers.set("Content-Type", "application/json");
+    }
+
+    const method = init?.method?.toUpperCase() || "GET";
+    if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
+        const csrfToken = getCookie("XSRF-TOKEN");
+        if (csrfToken) {
+            headers.set("X-XSRF-TOKEN", csrfToken);
+        }
+    }
 
     const res = await fetch(url, {
         ...init,
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-            ...(init?.headers ?? {}),
-        },
+        credentials: "include", // Automatically sends and receives cookies
+        headers,
     });
 
     if (!res.ok) {
+        if (res.status === 401 && path !== "/api/auth/refresh" && !path.startsWith("/api/auth/exchange")) {
+            if (!isRefreshing) {
+                isRefreshing = true;
+                try {
+                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                    if (refreshRes.ok) {
+                        isRefreshing = false;
+                        onRefreshed(null);
+                        
+                        // Retry original request. The browser will automatically send the new access token cookie
+                        return apiFetchRaw(path, { ...init, headers });
+                    } else {
+                        isRefreshing = false;
+                        onRefreshed(new ApiError(await parseErrorResponse(refreshRes)));
+                    }
+                } catch (e) {
+                    isRefreshing = false;
+                    onRefreshed(e instanceof Error ? e : new Error(String(e)));
+                }
+            } else {
+                return new Promise((resolve, reject) => {
+                    addRefreshSubscriber((error) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(apiFetchRaw(path, { ...init, headers }));
+                        }
+                    });
+                });
+            }
+        }
         const errorResponse = await parseErrorResponse(res);
         throw new ApiError(errorResponse);
     }
 
-    // 204 No Content — return undefined
+    return res;
+}
+
+export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+    const res = await apiFetchRaw(path, init);
+
     if (res.status === 204) {
         return undefined as T;
     }
@@ -101,6 +167,10 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 export const api = {
     loginUrl: (): Promise<{ url: string }> => apiFetch<{ url: string }>("/api/auth/login-url"),
     me: (): Promise<User> => apiFetch<User>("/api/auth/me"),
+    exchangeToken: (token: string): Promise<User> =>
+        apiFetch<User>(`/api/auth/exchange?token=${encodeURIComponent(token)}`, {
+            method: "POST",
+        }),
     logout: (): Promise<void> =>
         apiFetch<void>("/api/auth/logout", {
             method: "POST",
@@ -120,13 +190,9 @@ export const api = {
         ),
     getMessages: (sessionId: string) => apiFetch<ChatMessage[]>(`/api/chat/sessions/${sessionId}`),
     sendMessage: async (sessionId: string, content: string) => {
-        const url = `${BACKEND_BASE_URL.replace(/\/$/, "")}/api/chat/sessions/${sessionId}/messages`;
-        return fetch(url, {
+        const url = `/api/chat/sessions/${sessionId}/messages`;
+        return apiFetchRaw(url, {
             method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
             body: JSON.stringify({ content }),
         });
     },
