@@ -2,15 +2,15 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 /**
- * The real session cookie set by Spring Boot (HttpOnly).
- * The middleware runs on the Edge and CAN read HttpOnly cookies,
- * so we use this as the single source of truth for authentication state.
- * The frontend never reads or writes this cookie directly.
+ * The session cookie set by Spring Boot (HttpOnly).
+ * Because ALL API calls go through Next.js rewrites (same-origin from
+ * the browser's perspective), this cookie is set on the Vercel domain
+ * and the middleware can read it directly.
  */
 const SESSION_COOKIE = "CODEMIND_SESSION";
 
 // Routes that do NOT require authentication
-const PUBLIC_PATHS = ["/", "/login", "/auth/callback"];
+const PUBLIC_PATHS = ["/", "/login", "/auth/callback", "/oauth2", "/login/oauth2", "/api"];
 
 export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -53,7 +53,8 @@ export const config = {
          * - favicon.ico
          * - Any file with an extension (images, fonts, etc.)
          */
-        "/((?!_next/static|_next/image|favicon.ico)(?!.*\\..*).+)",
+        "/((?!_next/static|_next/image|favicon.ico|api)(?!.*\\..*).+)",
         "/dashboard/:path*", "/chat/:path*", "/login", "/auth/callback",
+        "/oauth2/:path*", "/login/oauth2/:path*",
     ],
 };

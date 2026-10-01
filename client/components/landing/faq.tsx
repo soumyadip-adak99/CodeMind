@@ -18,7 +18,7 @@ export function LandingFaq() {
                 <h2 className="text-3xl font-semibold tracking-tight font-geist-sans mb-10 text-center">
                     Frequently Asked Questions
                 </h2>
-                <Accordion type="single" collapsible className="w-full">
+                <Accordion className="w-full">
                     <AccordionItem value="item-1">
                         <AccordionTrigger className="text-left font-medium">What gets indexed?</AccordionTrigger>
                         <AccordionContent className="text-muted-foreground leading-relaxed">

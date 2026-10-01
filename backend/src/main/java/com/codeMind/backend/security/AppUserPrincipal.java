@@ -16,10 +16,18 @@ public class AppUserPrincipal implements OAuth2User {
     @Getter
     private final User user;
     private final Map<String, Object> attributes;
+    private final Collection<? extends GrantedAuthority> authorities;
 
     public AppUserPrincipal(User user, Map<String, Object> attributes) {
         this.user = user;
         this.attributes = attributes;
+        this.authorities = AuthorityUtils.createAuthorityList("ROLE_USER");
+    }
+
+    public AppUserPrincipal(User user, Map<String, Object> attributes, Collection<? extends GrantedAuthority> authorities) {
+        this.user = user;
+        this.attributes = attributes;
+        this.authorities = authorities != null ? authorities : AuthorityUtils.createAuthorityList("ROLE_USER");
     }
 
     public UUID getId() {
@@ -33,7 +41,7 @@ public class AppUserPrincipal implements OAuth2User {
 
     @Override
     public @NonNull Collection<? extends GrantedAuthority> getAuthorities() {
-        return AuthorityUtils.createAuthorityList("ROLE_USER");
+        return authorities;
     }
 
     @Override

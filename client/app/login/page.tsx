@@ -26,6 +26,14 @@ function getErrorMessage(error: string): string {
             return "You denied access to your GitHub account. Please allow access to sign in.";
         case "oauth2_error":
             return "An OAuth2 error occurred while communicating with GitHub. Please try again.";
+        case "oauth2_state_lost":
+            return "Your login session expired before it completed. This can happen if the sign-in took too long. Please try again.";
+        case "oauth2_config_error":
+            return "There is a configuration issue with the OAuth2 setup. Please contact support.";
+        case "oauth2_token_error":
+            return "Failed to complete the token exchange with GitHub. Please try again.";
+        case "oauth2_server_error":
+            return "GitHub is experiencing issues right now. Please try again in a few minutes.";
         case "invalid_token":
             return "The authentication token was invalid or expired. Please try again.";
         case "user_info_error":
@@ -73,12 +81,12 @@ function LoginContent() {
         },
     });
 
-    if (status === "loading" || status === "authenticated") {
+    if (status === "authenticated") {
         return (
             <div className="flex flex-col space-y-6 w-full max-w-md mx-auto relative z-10 items-center justify-center py-20">
                 <Spinner className="h-10 w-10 text-primary mb-4" />
                 <p className="text-muted-foreground animate-pulse font-medium">
-                    {status === "loading" ? "Checking authentication..." : "Redirecting to dashboard..."}
+                    Redirecting to dashboard...
                 </p>
             </div>
         );

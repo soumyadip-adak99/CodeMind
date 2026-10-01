@@ -1,4 +1,4 @@
-import { getApiBaseUrl, ApiError } from "@/lib/api";
+import { apiFetchRaw } from "@/lib/api";
 import { ChatMessage, StreamChatHandlers } from "@/@type";
 
 export async function streamChatMessage(
@@ -6,31 +6,11 @@ export async function streamChatMessage(
     content: string,
     handlers: StreamChatHandlers = {}
 ): Promise<void> {
-    const res = await fetch(`${getApiBaseUrl()}/api/chat/sessions/${sessionId}/messages`, {
+    const res = await apiFetchRaw(`/api/chat/sessions/${sessionId}/messages`, {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
         signal: handlers.signal,
     });
-
-    if (!res.ok) {
-        let message = res.statusText;
-
-        try {
-            const data = await res.json();
-            message = data.message ?? data.error ?? message;
-        } catch {
-            // ignore
-        }
-
-        throw new ApiError({
-            status: res.status,
-            error: res.statusText,
-            message: message,
-            timestamp: new Date().toISOString(),
-        });
-    }
 
     if (!res.body) {
         throw new Error("No response body for SSE stream");
