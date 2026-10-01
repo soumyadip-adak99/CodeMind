@@ -1,6 +1,6 @@
 <div align="center">
 
-# CodeMind
+# <img src="brain-circuit-dark.svg#gh-dark-mode-only" width="36" height="36" alt="CodeMind Logo" style="vertical-align: middle; margin-right: 8px; margin-bottom: 4px;" /> <img src="brain-circuit.svg#gh-light-mode-only" width="36" height="36" alt="CodeMind Logo" style="vertical-align: middle; margin-right: 8px; margin-bottom: 4px;" /> CodeMind
 
 **AI-ready knowledge base for your GitHub repositories**
 
