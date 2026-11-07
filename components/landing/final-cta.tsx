@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CodeMindIcon } from "@/components/icons/code-mind";
 import { FaGithub } from "react-icons/fa";
+import { ArrowRight, CheckCircle2, FolderGit2 } from "lucide-react";
 
 interface LandingFinalCtaProps {
     isAuthenticated?: boolean;
@@ -10,46 +13,80 @@ interface LandingFinalCtaProps {
 
 export function LandingFinalCta({ isAuthenticated }: LandingFinalCtaProps) {
     return (
-        <section className="py-40 relative z-10 bg-white dark:bg-[#0a0a0a] overflow-hidden border-t border-black/5 dark:border-white/5">
-            {/* Massive Ambient Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-primary/20 blur-[120px] rounded-[100%] pointer-events-none" />
-            
-            {/* Grid background with radial mask */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+        <section className="py-28 md:py-36 relative z-10 bg-background overflow-hidden border-t border-border/80">
+            {/* Ambient Radial Lighting */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] md:w-[950px] h-[450px] bg-gradient-to-r from-blue-500/15 via-purple-500/15 to-emerald-500/15 blur-[140px] rounded-full pointer-events-none" />
+
+            {/* Subtle Grid Pattern */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800f_1px,transparent_1px),linear-gradient(to_bottom,#8080800f_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
 
             <div className="container mx-auto px-4 md:px-6 relative z-10 text-center flex flex-col items-center">
-                
-                {/* Premium Logo with Pulsing Rings */}
-                <div className="relative mb-12">
-                    <div className="absolute inset-0 rounded-[24px] border border-primary/40 animate-ping" style={{ animationDuration: '3s' }} />
-                    <div className="absolute -inset-4 rounded-[32px] border border-primary/20 animate-pulse" style={{ animationDuration: '4s' }} />
-                    <div className="flex items-center justify-center w-24 h-24 rounded-[24px] bg-gray-50 dark:bg-[#121212] border border-black/10 dark:border-white/10 shadow-[0_0_50px_rgba(var(--primary),0.3)] relative z-10 overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <CodeMindIcon className="w-12 h-12 text-foreground relative z-10" />
+                {/* Brand Icon with Pulsing Rings */}
+                <div className="relative mb-8">
+                    <div className="absolute -inset-2.5 rounded-3xl border border-primary/20 animate-pulse" />
+                    <div className="flex items-center justify-center size-16 sm:size-18 rounded-2xl bg-card border border-border shadow-[0_0_40px_rgba(var(--primary),0.2)] relative z-10">
+                        <CodeMindIcon className="size-8 sm:size-9 text-primary" />
                     </div>
                 </div>
-                
-                <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter font-geist-sans mb-6 text-transparent bg-clip-text bg-gradient-to-b from-black to-black/60 dark:from-white dark:to-white/60">
-                    Ready to understand<br className="hidden md:block" /> your code?
+
+                {/* Main Heading: text-balanced, wide max-w to keep 2 clean punchy lines */}
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight font-sans mb-5 text-foreground max-w-4xl mx-auto text-balance leading-[1.15]">
+                    Stop guessing how the code works. <br className="hidden sm:inline" />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400">
+                        Start asking questions.
+                    </span>
                 </h2>
-                <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mb-12 font-medium">
-                    Connect your GitHub account and start chatting with your repositories in minutes.
+
+                {/* Subtitle */}
+                <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto text-balance mb-9 leading-relaxed font-normal">
+                    Connect your GitHub account in 60 seconds. Explore unfamiliar repositories, understand 
+                    architectural patterns, and get plain-English explanations backed by verified code lines.
                 </p>
-                
-                <div className="relative group w-full sm:w-auto">
-                    {/* Glowing button backdrop */}
-                    <div className="absolute -inset-1.5 bg-gradient-to-r from-primary via-purple-500 to-cyan-500 rounded-full blur-md opacity-50 group-hover:opacity-100 transition duration-500 group-hover:duration-200 animate-gradient-x" />
-                    
+
+                {/* Conversion Button with symmetric, clean glow */}
+                <div className="relative inline-flex items-center justify-center mb-9">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/40 via-indigo-500/40 to-purple-500/40 rounded-2xl blur-lg opacity-70 group-hover:opacity-100 transition duration-300 pointer-events-none" />
                     {isAuthenticated ? (
-                        <Link href="/dashboard" className={cn(buttonVariants({ size: "lg" }), "relative flex items-center justify-center h-14 px-10 text-lg rounded-full w-full shadow-2xl bg-white text-black dark:bg-white dark:text-black hover:bg-gray-50 hover:scale-[1.02] transition-all duration-300 ring-1 ring-black/5")}>
-                            <span className="font-semibold tracking-tight whitespace-nowrap">Open dashboard</span>
+                        <Link
+                            href="/dashboard"
+                            className={cn(
+                                buttonVariants({ size: "lg" }),
+                                "relative z-10 inline-flex items-center justify-center gap-2.5 h-13 px-8 text-sm sm:text-base rounded-xl bg-foreground text-background font-semibold hover:bg-foreground/90 transition-all duration-200 shadow-xl cursor-pointer"
+                            )}
+                        >
+                            <FolderGit2 className="size-4.5" />
+                            <span>Go to Your Dashboard</span>
+                            <ArrowRight className="size-4 ml-1" />
                         </Link>
                     ) : (
-                        <Link href="/login" className={cn(buttonVariants({ size: "lg" }), "relative flex items-center justify-center gap-3 h-14 px-10 text-lg rounded-full w-full shadow-2xl bg-white text-black dark:bg-white dark:text-black hover:bg-gray-50 hover:scale-[1.02] transition-all duration-300 ring-1 ring-black/5")}>
-                            <FaGithub className="w-6 h-6 shrink-0" />
-                            <span className="font-semibold tracking-tight whitespace-nowrap">Continue with GitHub</span>
+                        <Link
+                            href="/login"
+                            className={cn(
+                                buttonVariants({ size: "lg" }),
+                                "relative z-10 inline-flex items-center justify-center gap-2.5 h-13 px-8 text-sm sm:text-base rounded-xl bg-foreground text-background font-semibold hover:bg-foreground/90 transition-all duration-200 shadow-xl cursor-pointer"
+                            )}
+                        >
+                            <FaGithub className="size-5" />
+                            <span>Connect with GitHub — It's Free</span>
+                            <ArrowRight className="size-4 ml-1" />
                         </Link>
                     )}
+                </div>
+
+                {/* Reassurance Checklist: perfectly aligned flex row */}
+                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground font-medium">
+                    <div className="inline-flex items-center gap-1.5">
+                        <CheckCircle2 className="size-3.5 text-emerald-400 shrink-0" />
+                        <span>No credit card required</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1.5">
+                        <CheckCircle2 className="size-3.5 text-emerald-400 shrink-0" />
+                        <span>Strictly read-only access</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1.5">
+                        <CheckCircle2 className="size-3.5 text-emerald-400 shrink-0" />
+                        <span>Your code never trains public AI</span>
+                    </div>
                 </div>
             </div>
         </section>

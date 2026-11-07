@@ -5,54 +5,61 @@ import { useSearchParams } from "next/navigation";
 import { CodeMindIcon } from "@/components/icons/code-mind";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuthStore } from "@/store/auth-store";
+import { api } from "@/lib/api";
 
 function AuthCallbackContent() {
     const searchParams = useSearchParams();
     const errorParam = searchParams.get("error");
+    const tokenParam = searchParams.get("token");
     const hasError = !!errorParam;
 
-    const fetchUser = useAuthStore((s) => s.fetchUser);
-    const status = useAuthStore((s) => s.status);
-    const user = useAuthStore((s) => s.user);
-
+    const setUser = useAuthStore((s) => s.setUser);
     const navigated = useRef(false);
 
     useEffect(() => {
         if (navigated.current) return;
 
+        // Handle OAuth failure redirects from the backend
         if (hasError) {
             navigated.current = true;
-            let loginError = "oauth2_error";
-            if (errorParam === "access_denied") {
-                loginError = "github_cancelled";
-            } else if (errorParam) {
-                loginError = errorParam;
-            }
-            window.location.href = `/login?error=${loginError}`;
+            // Pass through the specific error code from the backend failure handler.
+            // The backend maps OAuth2 errors to descriptive codes like
+            // oauth2_state_lost, oauth2_config_error, oauth2_token_error, etc.
+            // If the backend sends "access_denied", keep it as-is.
+            const loginError = errorParam || "oauth2_error";
+            window.location.href = `/login?error=${encodeURIComponent(loginError)}`;
             return;
         }
 
-        // Trigger a fresh fetch from the backend — the backend has just
-        // set CODEMIND_SESSION after the OAuth dance, so this will succeed.
-        fetchUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
-        if (navigated.current) return;
-        if (status === "loading") return;
-
-        if (status === "authenticated" && user) {
-            navigated.current = true;
-            window.location.href = "/dashboard";
-        } else if (status === "unauthenticated") {
+        // No token means the user landed here without going through OAuth
+        if (!tokenParam) {
             navigated.current = true;
             window.location.href = "/login?error=oauth2_error";
-        } else if (status === "error") {
-            navigated.current = true;
-            window.location.href = "/login?error=server_offline";
+            return;
         }
-    }, [status, user]);
+
+        // Mark as navigated BEFORE the async call to prevent React 18
+        // StrictMode from firing the effect twice and consuming the
+        // single-use token on both calls (second would always get 401).
+        navigated.current = true;
+
+        // Exchange the one-time token for a real Spring session.
+        // The backend sets the CODEMIND_SESSION cookie in the response to
+        // THIS request, which is a direct cross-origin fetch to the backend
+        // domain — so the cookie is correctly scoped to the backend domain
+        // and the browser will send it on all future API calls.
+        api.exchangeToken(tokenParam)
+            .then((user) => {
+                setUser(user);
+                window.location.href = "/dashboard";
+            })
+            .catch(() => {
+                navigated.current = false; // Allow retry
+                window.location.href = "/login?error=invalid_token";
+            });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background relative z-10">

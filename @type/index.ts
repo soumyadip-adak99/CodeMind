@@ -54,6 +54,7 @@ export type Repository = {
     defaultBranch: string;
     language: string | null;
     htmlUrl: string | null;
+    description?: string | null;
     indexStatus: IndexStatus;
     indexedAt: string | null;
     chunkCount: number;

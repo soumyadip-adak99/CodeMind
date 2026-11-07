@@ -87,21 +87,40 @@ export function useChat({
             setError(null);
             abortControllerRef.current = new AbortController();
 
+            // ── 1. Optimistic UI update ──
+            const optimisticId = `optimistic-${Date.now()}`;
+            const optimisticMsg: ChatMessage = {
+                id: optimisticId,
+                sessionId: sid,
+                role: "user",
+                content,
+                citations: [],
+                createdAt: new Date().toISOString(),
+            };
+
+            queryClient.setQueryData(
+                queryKeys.chat.message(sid),
+                (old: ChatMessage[] | undefined) => [...(old ?? []), optimisticMsg]
+            );
+
             try {
                 await streamChatMessage(sid, content, {
                     signal: abortControllerRef.current.signal,
                     onUserMessage: (msg) => {
+                        // Replace optimistic message with actual persisted message
                         queryClient.setQueryData(
                             queryKeys.chat.message(sid),
                             (old: ChatMessage[] | undefined) => {
-                                const existing = old ?? [];
-                                const idx = existing.findIndex((m) => m.id === msg.id);
+                                const withoutOptimistic = (old ?? []).filter(
+                                    (m) => m.id !== optimisticId
+                                );
+                                const idx = withoutOptimistic.findIndex((m) => m.id === msg.id);
                                 if (idx !== -1) {
-                                    const next = [...existing];
+                                    const next = [...withoutOptimistic];
                                     next[idx] = msg;
                                     return next;
                                 }
-                                return [...existing, msg];
+                                return [...withoutOptimistic, msg];
                             }
                         );
                     },
@@ -126,6 +145,12 @@ export function useChat({
                     },
                     onError: (err) => {
                         setError(err);
+                        // Rollback optimistic message on stream error
+                        queryClient.setQueryData(
+                            queryKeys.chat.message(sid),
+                            (old: ChatMessage[] | undefined) =>
+                                (old ?? []).filter((m) => m.id !== optimisticId)
+                        );
                     },
                     onDone: () => {
                         setIsStreaming(false);
@@ -136,6 +161,12 @@ export function useChat({
                     },
                 });
             } catch (err) {
+                // Rollback optimistic message on failure
+                queryClient.setQueryData(
+                    queryKeys.chat.message(sid),
+                    (old: ChatMessage[] | undefined) =>
+                        (old ?? []).filter((m) => m.id !== optimisticId)
+                );
                 if ((err as Error).name !== "AbortError") {
                     setError(err instanceof Error ? err : new Error("Failed to send message"));
                 }

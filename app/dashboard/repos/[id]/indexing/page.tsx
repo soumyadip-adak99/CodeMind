@@ -3,12 +3,13 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, ChevronRight, FileCode2, Loader2, Sparkles, XCircle, Code2, Cpu, Database, RefreshCw } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, XCircle, Code2, Cpu, Database, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/layout/app-shell";
 import { useIndexStatus, useRepo, useStartIndexing } from "@/hooks/use-repo";
 import { cn } from "@/lib/utils";
 import { IndexErrorAlert } from "@/components/dashboard/index-error-alert";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import Link from "next/link";
 
 export default function IndexingPage() {
@@ -23,6 +24,8 @@ export default function IndexingPage() {
     const { data: statusResponse } = useIndexStatus(repoId, true);
 
     const [progressValue, setProgressValue] = useState(0);
+
+    const [confirmReindexOpen, setConfirmReindexOpen] = useState(false);
 
     // Derived values
     const status = statusResponse?.indexStatus || repo?.indexStatus;
@@ -56,11 +59,13 @@ export default function IndexingPage() {
     if (isRepoLoading) {
         return (
             <AppShell title="Indexing Status" actions={headerActions}>
-                <div className="flex h-full items-center justify-center min-h-[60vh]">
-                    <div className="flex flex-col items-center gap-4">
-                        <Loader2 className="size-8 animate-spin text-primary/80" />
-                        <p className="text-sm text-muted-foreground animate-pulse">Loading repository details...</p>
+                <div className="mx-auto mt-12 flex w-full max-w-xl flex-col items-center justify-center gap-8 text-center">
+                    <div className="size-28 rounded-2xl bg-muted/60 animate-pulse" />
+                    <div className="space-y-3 w-full max-w-sm flex flex-col items-center">
+                        <div className="h-6 w-48 rounded-lg bg-muted animate-pulse" />
+                        <div className="h-4 w-72 rounded bg-muted/60 animate-pulse" />
                     </div>
+                    <div className="w-full max-w-md h-3 rounded-full bg-muted animate-pulse" />
                 </div>
             </AppShell>
         );
@@ -213,18 +218,30 @@ export default function IndexingPage() {
                 )}
 
                 {/* ── Action Buttons ── */}
-                <div className="pt-8 h-20">
+                <div className="pt-8 min-h-20">
                     {isReady && (
-                        <Button 
-                            size="lg" 
-                            className="rounded-full shadow-lg hover:shadow-primary/25 transition-all duration-300 hover:-translate-y-1 bg-primary text-primary-foreground font-medium px-8" 
-                            nativeButton={false}
-                            render={<Link href={`/chat/${repo.id}`} />}
-                        >
-                            <Code2 className="mr-2 size-5" />
-                            Chat with codebase
-                            <ChevronRight className="ml-1 size-4 opacity-70" />
-                        </Button>
+                        <div className="flex flex-wrap items-center justify-center gap-3">
+                            <Button 
+                                size="lg" 
+                                className="rounded-full shadow-lg hover:shadow-primary/25 transition-all duration-300 hover:-translate-y-1 bg-primary text-primary-foreground font-medium px-8" 
+                                nativeButton={false}
+                                render={<Link href={`/chat/${repo.id}`} />}
+                            >
+                                <Code2 className="mr-2 size-5" />
+                                Chat with codebase
+                                <ChevronRight className="ml-1 size-4 opacity-70" />
+                            </Button>
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                className="rounded-full px-6"
+                                onClick={() => setConfirmReindexOpen(true)}
+                                disabled={startIndexing.isPending}
+                            >
+                                <RefreshCw className={cn("mr-2 size-4", startIndexing.isPending && "animate-spin")} />
+                                Re-index repository
+                            </Button>
+                        </div>
                     )}
                     {isFailed && (
                         <Button 
@@ -239,6 +256,21 @@ export default function IndexingPage() {
                         </Button>
                     )}
                 </div>
+
+                {/* Destructive Action Protection for Re-indexing */}
+                <ConfirmDialog
+                    open={confirmReindexOpen}
+                    onOpenChange={setConfirmReindexOpen}
+                    title={`Re-index ${repo.name}?`}
+                    description="This repository has already been indexed. Re-indexing will delete all existing vector embeddings and recreate them from scratch."
+                    confirmText="Yes, Re-index"
+                    variant="destructive"
+                    isPending={startIndexing.isPending}
+                    onConfirm={() => {
+                        startIndexing.mutate(repoId);
+                        setConfirmReindexOpen(false);
+                    }}
+                />
             </div>
         </AppShell>
     );

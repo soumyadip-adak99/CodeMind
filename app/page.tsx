@@ -1,9 +1,11 @@
 import { cookies } from "next/headers";
 import { LandingNavbar } from "@/components/landing/navbar";
 import { LandingHero } from "@/components/landing/hero";
+import { ProblemSolution } from "@/components/landing/problem-solution";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { ProductShowcase } from "@/components/landing/product-showcase";
 import { LandingFeatures } from "@/components/landing/features";
+import { LandingCapabilities } from "@/components/landing/capabilities";
 import { ArchitectureDiagram } from "@/components/landing/architecture-diagram";
 import { LandingSecurity } from "@/components/landing/security";
 import { LandingFaq } from "@/components/landing/faq";
@@ -20,9 +22,11 @@ export default async function LandingPage() {
             <VectorFieldCanvas />
             <LandingNavbar isAuthenticated={isAuthenticated} />
             <LandingHero isAuthenticated={isAuthenticated} />
+            <ProblemSolution />
             <HowItWorks />
             <ProductShowcase />
             <LandingFeatures />
+            <LandingCapabilities />
             <ArchitectureDiagram />
             <LandingSecurity />
             <LandingFaq />

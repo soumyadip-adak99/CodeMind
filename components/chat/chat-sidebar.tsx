@@ -28,6 +28,7 @@ import {
     Trash2,
     Settings,
     LogOut,
+    Command,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -317,8 +318,9 @@ export function ChatSidebarContent({
                     >
                         <Plus className="w-4 h-4 shrink-0 group-hover:rotate-90 transition-transform duration-200" />
                         <span className="text-sm font-medium flex-1 text-left">New chat</span>
-                        <kbd className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border font-mono leading-none">
-                            ⌘K
+                        <kbd className="hidden sm:inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/80 font-mono leading-none">
+                            <Command className="size-2.5 shrink-0" />
+                            <span>K</span>
                         </kbd>
                     </button>
                 )}

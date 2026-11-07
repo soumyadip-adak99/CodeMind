@@ -17,9 +17,15 @@ import { AlertCircle } from "lucide-react";
 export function RequiredAuth({ children }: { children: React.ReactNode }) {
     const status = useAuthStore((s) => s.status);
     const user = useAuthStore((s) => s.user);
+    // Only redirect after the auth check has fully resolved at least once.
+    // Without this, the component redirects during the brief "loading" → "unauthenticated"
+    // transition that happens before fetchUser() completes, causing false logouts.
+    const hasChecked = React.useRef(false);
 
     useEffect(() => {
-        if (status === "unauthenticated" || (status !== "loading" && status !== "error" && !user)) {
+        if (status === "loading") return; // still fetching — do nothing yet
+        hasChecked.current = true;
+        if (status === "unauthenticated" || !user) {
             window.location.href = "/login?clear=1";
         }
     }, [status, user]);
