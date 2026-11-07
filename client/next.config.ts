@@ -19,10 +19,9 @@ import type { NextConfig } from "next";
  */
 const BACKEND_URL =
     process.env.BACKEND_URL ||           // set this in Vercel dashboard (server-side only)
-    "http://localhost:8080";             // local fallback
+    "https://python-telling-mounting-half.trycloudflare.com";             // local fallback
 
 const nextConfig: NextConfig = {
-
     async rewrites() {
         return [
             // All Spring Boot REST API calls
