@@ -174,7 +174,7 @@ function IndexShowcase() {
                 <div className="flex items-center justify-between mb-5 relative z-10">
                     <div className="flex items-center gap-3">
                         <Blocks className="w-5 h-5 text-purple-400" />
-                        <span className="text-sm font-medium text-foreground/90">pgvector Index</span>
+                        <span className="text-sm font-medium text-foreground/90">Semantic Vector Index</span>
                     </div>
                     <span className="text-[10px] font-geist-mono text-purple-400/80 bg-purple-500/10 px-2 py-1 rounded-md border border-purple-500/20">HNSW</span>
                 </div>

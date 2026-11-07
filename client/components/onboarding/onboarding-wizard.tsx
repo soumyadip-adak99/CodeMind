@@ -118,10 +118,9 @@ export function OnboardingWizard() {
                         <button
                             type="button"
                             onClick={handleSkip}
-                            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                            className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer font-medium hover:underline"
                         >
-                            <span>Skip setup</span>
-                            <X className="size-3.5" />
+                            Skip setup
                         </button>
                     </div>
                     <Progress value={(step / totalSteps) * 100} className="h-1.5" />
@@ -161,7 +160,7 @@ export function OnboardingWizard() {
                                     </div>
                                     <div className="space-y-0.5">
                                         <p className="font-semibold text-xs text-foreground">Vector Index</p>
-                                        <p className="text-[11px] text-muted-foreground leading-snug">pgvector cosine storage</p>
+                                        <p className="text-[11px] text-muted-foreground leading-snug">Semantic vector recall</p>
                                     </div>
                                 </div>
                                 <div className="rounded-xl border border-border/60 bg-card p-3 flex flex-col gap-2">

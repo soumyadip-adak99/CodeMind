@@ -1,137 +1,134 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useScrollStore } from "@/store/scroll-store";
-import { motion, useScroll } from "framer-motion";
+import { motion } from "framer-motion";
+import {
+    ArrowRight,
+    BrainCircuit,
+    CheckCircle2,
+    Code2,
+    Cpu,
+    Database,
+    FileCode2,
+    FolderGit2,
+    Lock,
+    MessageSquare,
+    Network,
+    Sparkles,
+    Zap,
+} from "lucide-react";
+import { FaGithub } from "react-icons/fa";
 import { cn } from "@/lib/utils";
-import { HowItWorksShowcase } from "./how-it-works-showcase";
+
+const STEPS = [
+    {
+        stepNumber: "01",
+        badge: "Step 1: Quick Connection",
+        title: "Connect your GitHub account",
+        description:
+            "Sign in with GitHub and select the repositories you want to explore. CodeMind requests strictly read-only access—we never commit code, modify branches, or alter your git history.",
+        techPills: ["One-Click GitHub Sign In", "Read-Only Safety", "Public & Private Repos"],
+        icon: FaGithub,
+        iconColor: "text-zinc-200 bg-zinc-500/10 border-zinc-500/20",
+    },
+    {
+        stepNumber: "02",
+        badge: "Step 2: Smart Indexing",
+        title: "We map your codebase",
+        description:
+            "CodeMind automatically scans your file tree, removes build artifacts and lockfile clutter, and breaks down classes and functions into semantic chunks so the AI understands real project context.",
+        techPills: ["Noise & Lockfile Filtering", "Syntax-Aware Chunks", "Fast Background Indexing"],
+        icon: Database,
+        iconColor: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+    },
+    {
+        stepNumber: "03",
+        badge: "Step 3: Direct Answers",
+        title: "Ask anything and inspect the sources",
+        description:
+            "Ask questions in plain English about architecture, data flows, or bug symptoms. CodeMind returns concise explanations accompanied by the exact files and line numbers where the code lives.",
+        techPills: ["Plain-English Questions", "Exact File & Line Numbers", "Clickable Code Citations"],
+        icon: MessageSquare,
+        iconColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    },
+];
 
 export function HowItWorks() {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const setScrollProgress = useScrollStore((state) => state.setScrollProgress);
-    const setCurrentStage = useScrollStore((state) => state.setCurrentStage);
-    const [activeStage, setActiveStage] = useState(0);
-    
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start start", "end end"]
-    });
-
-    useEffect(() => {
-        return scrollYProgress.on("change", (v) => {
-            setScrollProgress(v);
-            
-            // Determine stage based on scroll progress
-            let stage = 0;
-            if (v < 0.33) stage = 0;
-            else if (v < 0.66) stage = 1;
-            else stage = 2;
-            
-            setCurrentStage(stage);
-            setActiveStage(stage);
-        });
-    }, [scrollYProgress, setScrollProgress, setCurrentStage]);
-
     return (
-        <section id="how-it-works" ref={containerRef} className="relative z-10 bg-background pt-24 pb-48">
-            <div className="container mx-auto px-4 md:px-6 relative">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
-                    
-                    {/* Left Column: Scrolling Content */}
-                    <div className="relative">
-                        {/* Progress Line */}
-                        <div className="absolute left-[15px] top-32 bottom-32 w-[2px] bg-border rounded-full hidden md:block">
-                            <motion.div 
-                                className="absolute top-0 w-full bg-primary rounded-full"
-                                style={{ height: "100%", scaleY: scrollYProgress, transformOrigin: "top" }}
-                            />
-                        </div>
+        <section id="how-it-works" className="py-24 md:py-32 relative z-10 bg-background overflow-hidden border-t border-border/60">
+            {/* Background Light Beam */}
+            <div className="absolute left-1/3 top-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-primary/5 blur-[140px] pointer-events-none rounded-full" />
 
-                        <div className="space-y-0 relative z-10">
-                            {/* Step 1 */}
-                            <div className={cn("min-h-screen flex flex-col justify-center pl-0 md:pl-12 transition-opacity duration-700", activeStage === 0 ? "opacity-100" : "opacity-30")}>
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-geist-mono text-sm shadow-[0_0_15px_rgba(var(--primary),0.2)]">1</div>
-                                    <span className="font-geist-mono text-sm text-primary tracking-widest uppercase">Connect</span>
-                                </div>
-                                <h2 className="text-4xl md:text-5xl font-bold tracking-tight font-geist-sans mb-6 text-foreground">
-                                    Connect your repositories
-                                </h2>
-                                <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed font-medium">
-                                    Sign in securely. CodeMind instantly fetches the repositories you own, collaborate on, or have access to through organizations.
-                                </p>
-                                <div className="flex flex-wrap gap-3">
-                                    <span className="inline-flex items-center rounded-lg border border-border bg-card/50 px-4 py-2 text-sm font-geist-mono shadow-sm">OAuth 2.0</span>
-                                    <span className="inline-flex items-center rounded-lg border border-border bg-card/50 px-4 py-2 text-sm font-geist-mono shadow-sm">Enterprise Identity</span>
-                                </div>
-                            </div>
-
-                            {/* Step 2 */}
-                            <div className={cn("min-h-screen flex flex-col justify-center pl-0 md:pl-12 transition-opacity duration-700", activeStage === 1 ? "opacity-100" : "opacity-30")}>
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-8 h-8 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-500 font-geist-mono text-sm shadow-[0_0_15px_rgba(168,85,247,0.2)]">2</div>
-                                    <span className="font-geist-mono text-sm text-purple-500 tracking-widest uppercase">Index</span>
-                                </div>
-                                <h2 className="text-4xl md:text-5xl font-bold tracking-tight font-geist-sans mb-6 text-foreground">
-                                    Transform code to vectors
-                                </h2>
-                                <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed font-medium">
-                                    Background workers intelligently parse ASTs, filter out noise, chunk your code, and generate dense vector embeddings using specialized models.
-                                </p>
-                                <div className="flex flex-wrap gap-3 mb-10">
-                                    <span className="inline-flex items-center rounded-lg border border-purple-500/20 bg-purple-500/5 text-purple-500 px-4 py-2 text-sm font-geist-mono shadow-sm">1536-d Embeddings</span>
-                                    <span className="inline-flex items-center rounded-lg border border-border bg-card/50 px-4 py-2 text-sm font-geist-mono shadow-sm">pgvector HNSW</span>
-                                </div>
-                                
-                                {/* Live indexing progress demo */}
-                                <div className="p-5 border border-border rounded-2xl bg-card/40 backdrop-blur-xl max-w-md shadow-2xl relative overflow-hidden group">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    <div className="flex justify-between items-center mb-4 font-geist-mono text-sm">
-                                        <span className="text-foreground font-medium">Indexing core-services</span>
-                                        <span className="text-purple-500 animate-pulse font-semibold">Processing...</span>
-                                    </div>
-                                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden shadow-inner">
-                                        <motion.div 
-                                            className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full"
-                                            initial={{ width: "10%" }}
-                                            whileInView={{ width: "85%" }}
-                                            transition={{ duration: 4, ease: "easeOut" }}
-                                        />
-                                    </div>
-                                    <div className="flex justify-between items-center mt-3 font-geist-mono text-xs text-muted-foreground">
-                                        <span>245 / 312 files</span>
-                                        <span>14,503 chunks</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Step 3 */}
-                            <div className={cn("min-h-screen flex flex-col justify-center pl-0 md:pl-12 transition-opacity duration-700", activeStage === 2 ? "opacity-100" : "opacity-30")}>
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-500 font-geist-mono text-sm shadow-[0_0_15px_rgba(6,182,212,0.2)]">3</div>
-                                    <span className="font-geist-mono text-sm text-cyan-500 tracking-widest uppercase">Ask</span>
-                                </div>
-                                <h2 className="text-4xl md:text-5xl font-bold tracking-tight font-geist-sans mb-6 text-foreground">
-                                    Chat with your codebase
-                                </h2>
-                                <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed font-medium">
-                                    Semantic search finds the exact files and functions you need. The LLM synthesizes an accurate, context-aware answer directly from your actual code.
-                                </p>
-                                <div className="flex flex-wrap gap-3">
-                                    <span className="inline-flex items-center rounded-lg border border-cyan-500/20 bg-cyan-500/5 text-cyan-500 px-4 py-2 text-sm font-geist-mono shadow-sm">Top-K Retrieval</span>
-                                    <span className="inline-flex items-center rounded-lg border border-border bg-card/50 px-4 py-2 text-sm font-geist-mono shadow-sm">Context-aware RAG</span>
-                                </div>
-                            </div>
-                        </div>
+            <div className="container mx-auto px-4 md:px-6 relative z-10">
+                {/* Section Header */}
+                <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-semibold text-primary mb-4">
+                        <Sparkles className="size-3.5" />
+                        <span>How It Works</span>
                     </div>
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-sans text-foreground mb-4">
+                        From GitHub to answers in three steps.
+                    </h2>
+                    <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+                        No complex plugins to install or machine learning models to configure. 
+                        Sign in, select your repository, and start asking questions in under a minute.
+                    </p>
+                </div>
 
-                    {/* Right Column: Sticky HTML/Framer Visual */}
-                    <div className="hidden lg:block">
-                        <div className="sticky top-24 h-[80vh] w-full rounded-3xl overflow-hidden border border-border shadow-2xl flex items-center justify-center">
-                            <HowItWorksShowcase stage={activeStage} />
-                        </div>
-                    </div>
+                {/* 3 Step Connected Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto relative">
+                    {STEPS.map((step, idx) => {
+                        const Icon = step.icon;
+                        return (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: idx * 0.15 }}
+                                viewport={{ once: true, margin: "-50px" }}
+                                className="relative rounded-3xl border border-border/80 bg-card/60 p-7 sm:p-8 backdrop-blur-xl flex flex-col justify-between hover:border-primary/40 hover:bg-card/90 transition-all duration-300 shadow-sm hover:shadow-xl group"
+                            >
+                                <div>
+                                    {/* Step Header */}
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div
+                                            className={cn(
+                                                "size-12 rounded-2xl border flex items-center justify-center transition-transform duration-300 group-hover:scale-105",
+                                                step.iconColor
+                                            )}
+                                        >
+                                            <Icon className="size-6" />
+                                        </div>
+                                        <span className="text-xs font-mono font-bold text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-md border border-border/60">
+                                            {step.stepNumber}
+                                        </span>
+                                    </div>
 
+                                    {/* Step Info */}
+                                    <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-primary mb-1.5 block">
+                                        {step.badge}
+                                    </span>
+                                    <h3 className="text-lg sm:text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
+                                        {step.title}
+                                    </h3>
+                                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-6 font-normal">
+                                        {step.description}
+                                    </p>
+                                </div>
+
+                                {/* Tech Pills */}
+                                <div className="pt-4 border-t border-border/60 flex flex-wrap gap-1.5">
+                                    {step.techPills.map((pill, pIdx) => (
+                                        <span
+                                            key={pIdx}
+                                            className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-md bg-muted/70 text-muted-foreground border border-border/50"
+                                        >
+                                            {pill}
+                                        </span>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </div>
         </section>
