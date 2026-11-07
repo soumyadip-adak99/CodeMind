@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LogOut, Settings } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { LogOut, Settings, Keyboard, HelpCircle, Compass, Search, Command } from "lucide-react";
 import { CodeMindIcon } from "@/components/icons/code-mind";
 import { ModeToggle } from "../ui/mode-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useUIStore } from "@/store/ui-store";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -51,8 +52,60 @@ export function AppShell({
     hideHeader?: boolean;
 }) {
     const pathname = usePathname();
+    const router = useRouter();
     const { data: user } = useCurrentUser();
     const logout = useLogout();
+    const { toggleCommandPalette, setShortcutsDialogOpen, setOnboardingWizardOpen } = useUIStore();
+
+    // Global navigation chords: g then d, g then o, g then s
+    useEffect(() => {
+        let lastKey = "";
+        let timer: NodeJS.Timeout;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement | null;
+            if (
+                target?.tagName === "INPUT" ||
+                target?.tagName === "TEXTAREA" ||
+                target?.isContentEditable
+            ) {
+                return;
+            }
+
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+            const key = e.key.toLowerCase();
+            if (lastKey === "g") {
+                if (key === "d") {
+                    e.preventDefault();
+                    router.push("/dashboard");
+                } else if (key === "o") {
+                    e.preventDefault();
+                    router.push("/dashboard/overview");
+                } else if (key === "s") {
+                    e.preventDefault();
+                    router.push("/dashboard/settings");
+                }
+                lastKey = "";
+                clearTimeout(timer);
+                return;
+            }
+
+            if (key === "g") {
+                lastKey = "g";
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    lastKey = "";
+                }, 1000);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+            clearTimeout(timer);
+        };
+    }, [router]);
 
     return (
         <SidebarProvider>
@@ -183,6 +236,14 @@ export function AppShell({
                                             </Link>
                                         }
                                     />
+                                    <DropdownMenuItem onClick={() => setShortcutsDialogOpen(true)}>
+                                        <Keyboard className="mr-2 h-4 w-4" />
+                                        Keyboard shortcuts
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setOnboardingWizardOpen(true)}>
+                                        <Compass className="mr-2 h-4 w-4" />
+                                        Onboarding tour
+                                    </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={() => logout()}>
                                         <LogOut className="mr-2 h-4 w-4" />
@@ -213,6 +274,20 @@ export function AppShell({
                             )}
                         </div>
                         <div className="ml-auto flex items-center gap-2">
+                            {/* Global Command Palette search trigger */}
+                            <button
+                                type="button"
+                                onClick={toggleCommandPalette}
+                                className="flex h-8 items-center gap-2 rounded-xl border border-input bg-muted/40 px-3 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-all cursor-pointer"
+                                aria-label="Open command palette"
+                            >
+                                <Search className="size-3.5 shrink-0" />
+                                <span className="hidden sm:inline">Search & commands...</span>
+                                <kbd className="pointer-events-none hidden sm:inline-flex h-5 select-none items-center justify-center gap-1 rounded-md border border-border/80 bg-background px-1.5 font-mono text-[10px] font-medium text-muted-foreground shadow-xs">
+                                    <Command className="size-3 shrink-0" />
+                                    <span className="text-[10px] font-semibold leading-none">K</span>
+                                </kbd>
+                            </button>
                             {actions}
                             <ModeToggle />
                         </div>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { ChevronDown } from "lucide-react";
@@ -6,6 +6,7 @@ import { cn } from "cn";
 import { ChatMessage } from "@/@type";
 import { MessageItem, MessageSkeleton, ThinkingIndicator } from "./message-item";
 import { Button } from "@/components/ui/button";
+import { useThrottledCallback } from "@/lib/throttle";
 
 interface MessageListProps {
     messages: ChatMessage[];
@@ -31,15 +32,15 @@ export function MessageList({
     const [userScrolledUp, setUserScrolledUp] = useState(false);
     const isAtBottomRef = useRef(true);
 
-    // Detect user scroll-up
-    const handleScroll = useCallback(() => {
+    // Throttled scroll event handler to optimize rendering and prevent excessive event fires
+    const handleScroll = useThrottledCallback(() => {
         const el = scrollRef.current;
         if (!el) return;
         const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
         const atBottom = distFromBottom < 80;
         isAtBottomRef.current = atBottom;
         setUserScrolledUp(!atBottom);
-    }, []);
+    }, 100);
 
     // Auto-scroll when new content arrives
     useEffect(() => {

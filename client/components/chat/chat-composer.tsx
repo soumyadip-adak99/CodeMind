@@ -1,8 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import { Send, Square } from "lucide-react";
 import { cn } from "cn";
+import { safeLocalStorageGet, safeLocalStorageSet, safeLocalStorageRemove, STORAGE_KEYS } from "@/lib/storage";
 
 const MAX_ROWS = 8;
 const LINE_HEIGHT_PX = 24; // approx 1.5rem
@@ -12,13 +13,43 @@ interface ChatComposerProps {
     isStreaming: boolean;
     onStop: () => void;
     autoFocus?: boolean;
+    repoId?: string;
 }
 
-export function ChatComposer({ onSend, isStreaming, onStop, autoFocus = true }: ChatComposerProps) {
+export function ChatComposer({
+    onSend,
+    isStreaming,
+    onStop,
+    autoFocus = true,
+    repoId,
+}: ChatComposerProps) {
+    const draftKey = repoId ? `${STORAGE_KEYS.CHAT_DRAFTS_PREFIX}${repoId}` : null;
     const [content, setContent] = useState("");
     const [focused, setFocused] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const isComposingRef = useRef(false); // IME composition guard
+
+    // Load initial draft from storage if available
+    useEffect(() => {
+        if (!draftKey) return;
+        const savedDraft = safeLocalStorageGet<string>(draftKey, "");
+        if (savedDraft) {
+            setContent(savedDraft);
+        }
+    }, [draftKey]);
+
+    // Autosave draft to storage as user types
+    useEffect(() => {
+        if (!draftKey) return;
+        const timer = setTimeout(() => {
+            if (content.trim()) {
+                safeLocalStorageSet(draftKey, content);
+            } else {
+                safeLocalStorageRemove(draftKey);
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [content, draftKey]);
 
     const isEmpty = !content.trim();
 
@@ -42,12 +73,15 @@ export function ChatComposer({ onSend, isStreaming, onStop, autoFocus = true }: 
         if (isEmpty || isStreaming) return;
         const trimmed = content.trim();
         setContent("");
+        if (draftKey) {
+            safeLocalStorageRemove(draftKey);
+        }
         // Reset height
         if (textareaRef.current) textareaRef.current.style.height = "inherit";
         onSend(trimmed);
         // Re-focus after send
         setTimeout(() => textareaRef.current?.focus(), 0);
-    }, [content, isEmpty, isStreaming, onSend]);
+    }, [content, isEmpty, isStreaming, onSend, draftKey]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (isComposingRef.current) return;

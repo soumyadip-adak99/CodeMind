@@ -154,6 +154,7 @@ function ChatView({ repoId }: { repoId: string }) {
 
                         {/* Composer */}
                         <ChatComposer
+                            repoId={repoId}
                             onSend={handleSend}
                             isStreaming={isStreaming}
                             onStop={stopStreaming}

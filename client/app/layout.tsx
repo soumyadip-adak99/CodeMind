@@ -1,19 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/provider/theme-provider";
 import QueryProvider from "@/components/provider/query-provider";
 import { AuthProvider } from "@/components/provider/auth-provider";
-
-const geistSans = Geist({
-    variable: "--font-geist-sans",
-    subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-    variable: "--font-geist-mono",
-    subsets: ["latin"],
-});
+import { CommandPalette } from "@/components/command-palette/command-palette";
+import { ShortcutsDialog } from "@/components/shortcuts/shortcuts-dialog";
+import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 
 export const metadata: Metadata = {
     title: "CodeMind | Ask your codebase anything",
@@ -37,14 +29,14 @@ export const viewport = {
     ],
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html
             lang="en"
-            className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+            className="h-full antialiased"
             suppressHydrationWarning
         >
-            <body className="min-h-full flex flex-col">
+            <body className="min-h-full flex flex-col font-sans">
                 <QueryProvider>
                     <ThemeProvider
                         attribute="class"
@@ -54,6 +46,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     >
                         <AuthProvider>
                             {children}
+                            <CommandPalette />
+                            <ShortcutsDialog />
+                            <OnboardingWizard />
                         </AuthProvider>
                     </ThemeProvider>
                 </QueryProvider>

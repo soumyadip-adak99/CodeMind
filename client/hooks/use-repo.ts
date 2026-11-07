@@ -56,16 +56,66 @@ export function useStartIndexing() {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (repoId: string) => api.startIndex(repoId),
+        // ── 1. Optimistic UI update with rollback snapshot ──
+        onMutate: async (repoId: string) => {
+            // Cancel outgoing refetches so they don't overwrite our optimistic update
+            await queryClient.cancelQueries({ queryKey: queryKeys.repos.list() });
+            await queryClient.cancelQueries({ queryKey: queryKeys.repos.detail(repoId) });
+            await queryClient.cancelQueries({ queryKey: queryKeys.repos.status(repoId) });
+
+            const previousRepos = queryClient.getQueryData<Repository[]>(queryKeys.repos.list());
+            const previousDetail = queryClient.getQueryData<Repository>(queryKeys.repos.detail(repoId));
+            const previousStatus = queryClient.getQueryData(queryKeys.repos.status(repoId));
+
+            // Optimistically update list in cache
+            if (previousRepos) {
+                queryClient.setQueryData<Repository[]>(
+                    queryKeys.repos.list(),
+                    previousRepos.map((repo) =>
+                        repo.id === repoId
+                            ? {
+                                  ...repo,
+                                  indexStatus: "INDEXING",
+                                  errorMessage: null,
+                              }
+                            : repo
+                    )
+                );
+            }
+
+            // Optimistically update detail
+            if (previousDetail) {
+                queryClient.setQueryData<Repository>(queryKeys.repos.detail(repoId), {
+                    ...previousDetail,
+                    indexStatus: "INDEXING",
+                    errorMessage: null,
+                });
+            }
+
+            // Optimistically set status
+            queryClient.setQueryData(queryKeys.repos.status(repoId), {
+                repositoryId: repoId,
+                indexStatus: "INDEXING",
+                filesProcessed: 0,
+                filesTotal: previousDetail?.filesTotal ?? 0,
+                chunkCount: 0,
+                indexedAt: null,
+                errorMessage: null,
+            });
+
+            return { previousRepos, previousDetail, previousStatus, repoId };
+        },
         onSuccess: (repo) => {
             queryClient.setQueryData(queryKeys.repos.detail(repo.id), repo);
             updateRepoInListCache(queryClient, repo);
             queryClient.setQueryData(queryKeys.repos.status(repo.id), {
+                repositoryId: repo.id,
                 indexStatus: repo.indexStatus,
                 filesProcessed: repo.filesProcessed,
                 filesTotal: repo.filesTotal,
-            });
-            void queryClient.invalidateQueries({
-                queryKey: queryKeys.repos.status(repo.id),
+                chunkCount: repo.chunkCount,
+                indexedAt: repo.indexedAt,
+                errorMessage: repo.errorMessage,
             });
             toast.add({
                 title: "Indexing started",
@@ -73,12 +123,77 @@ export function useStartIndexing() {
                 type: "loading",
             });
         },
-        onError: (error: Error) => {
+        onError: (error: Error, repoId, context) => {
+            // ── Rollback cache on failure ──
+            if (context?.previousRepos) {
+                queryClient.setQueryData(queryKeys.repos.list(), context.previousRepos);
+            }
+            if (context?.previousDetail) {
+                queryClient.setQueryData(queryKeys.repos.detail(repoId), context.previousDetail);
+            }
+            if (context?.previousStatus) {
+                queryClient.setQueryData(queryKeys.repos.status(repoId), context.previousStatus);
+            }
             toast.add({
                 title: "Could not start indexing",
-                description: error.message,
+                description: error.message || "Failed to start indexing repository",
                 type: "error",
             });
+        },
+        onSettled: (_, __, repoId) => {
+            void queryClient.invalidateQueries({ queryKey: queryKeys.repos.status(repoId) });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.repos.list() });
+        },
+    });
+}
+
+export function useBulkIndexRepos() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (repoIds: string[]) => {
+            const results = await Promise.allSettled(repoIds.map((id) => api.startIndex(id)));
+            const successful = results.filter((r) => r.status === "fulfilled").length;
+            const failed = results.filter((r) => r.status === "rejected").length;
+            return { total: repoIds.length, successful, failed };
+        },
+        onMutate: async (repoIds: string[]) => {
+            await queryClient.cancelQueries({ queryKey: queryKeys.repos.list() });
+            const previousRepos = queryClient.getQueryData<Repository[]>(queryKeys.repos.list());
+
+            if (previousRepos) {
+                const idSet = new Set(repoIds);
+                queryClient.setQueryData<Repository[]>(
+                    queryKeys.repos.list(),
+                    previousRepos.map((repo) =>
+                        idSet.has(repo.id)
+                            ? { ...repo, indexStatus: "INDEXING", errorMessage: null }
+                            : repo
+                    )
+                );
+            }
+
+            return { previousRepos };
+        },
+        onSuccess: (data) => {
+            toast.add({
+                title: "Bulk indexing initiated",
+                description: `Queued ${data.successful} of ${data.total} repositories for indexing`,
+                type: data.failed > 0 ? "warning" : "success",
+            });
+        },
+        onError: (err: Error, _, context) => {
+            if (context?.previousRepos) {
+                queryClient.setQueryData(queryKeys.repos.list(), context.previousRepos);
+            }
+            toast.add({
+                title: "Bulk indexing failed",
+                description: err.message,
+                type: "error",
+            });
+        },
+        onSettled: () => {
+            void queryClient.invalidateQueries({ queryKey: queryKeys.repos.list() });
         },
     });
 }
