@@ -278,13 +278,13 @@ export function AppShell({
                             <button
                                 type="button"
                                 onClick={toggleCommandPalette}
-                                className="flex h-8 items-center gap-2 rounded-xl border border-input bg-muted/40 px-3 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-all cursor-pointer"
+                                className="flex h-8 items-center gap-2 rounded-lg border border-border/70 bg-muted/30 px-2.5 text-xs text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-all cursor-pointer"
                                 aria-label="Open command palette"
                             >
                                 <Search className="size-3.5 shrink-0" />
                                 <span className="hidden sm:inline">Search & commands...</span>
-                                <kbd className="pointer-events-none hidden sm:inline-flex h-5 select-none items-center justify-center gap-1 rounded-md border border-border/80 bg-background px-1.5 font-mono text-[10px] font-medium text-muted-foreground shadow-xs">
-                                    <Command className="size-3 shrink-0" />
+                                <kbd className="pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border/80 bg-background/80 px-1.5 font-mono text-[10px] font-medium text-muted-foreground shadow-xs">
+                                    <Command className="size-2.5 shrink-0" />
                                     <span className="text-[10px] font-semibold leading-none">K</span>
                                 </kbd>
                             </button>

@@ -8,17 +8,17 @@ import { ShortcutsDialog } from "@/components/shortcuts/shortcuts-dialog";
 import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 
 export const metadata: Metadata = {
-    title: "CodeMind | Ask your codebase anything",
-    description: "CodeMind turns GitHub repositories into a searchable AI knowledge base so developers can ask questions about their code. Open-source, secure, and powered by Spring Boot and PostgreSQL.",
+    title: "CodeMind — Understand any repository in minutes",
+    description: "Turn your GitHub repositories into an intelligent, conversational codebase. Ask questions about architecture or logic and get plain-English explanations backed by verified file and line citations.",
     openGraph: {
-        title: "CodeMind | Ask your codebase anything",
-        description: "Turn your GitHub repositories into a searchable AI knowledge base.",
+        title: "CodeMind — Understand any repository in minutes",
+        description: "Turn your GitHub repositories into an intelligent, conversational codebase backed by verified line citations.",
         type: "website",
     },
     twitter: {
         card: "summary_large_image",
-        title: "CodeMind | Ask your codebase anything",
-        description: "Turn your GitHub repositories into a searchable AI knowledge base.",
+        title: "CodeMind — Understand any repository in minutes",
+        description: "Turn your GitHub repositories into an intelligent, conversational codebase backed by verified line citations.",
     },
 };
 

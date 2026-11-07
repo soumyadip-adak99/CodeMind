@@ -1,65 +1,57 @@
 "use client";
-import { useAuthStatus } from "@/hooks/use-auth";
 
+import { useAuthStatus } from "@/hooks/use-auth";
 import { useMutation } from "@tanstack/react-query";
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import {
+    AlertCircle,
+    ArrowLeft,
+    ArrowRight,
+    ShieldCheck,
+} from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { GitHubIcon } from "@/components/icons/github-icon";
+import { FaGithub } from "react-icons/fa";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CodeMindIcon } from "@/components/icons/code-mind";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Spinner } from "@/components/ui/spinner";
 import { BACKEND_GITHUB_LOGIN_URL } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { CodeMindIcon } from "@/components/icons/code-mind";
 
 function getErrorMessage(error: string): string {
     switch (error) {
         case "github_cancelled":
-            return "GitHub sign-in was cancelled. Please try again.";
+            return "Sign-in was cancelled. Please try again.";
         case "access_denied":
-            return "You denied access to your GitHub account. Please allow access to sign in.";
+            return "Access was denied. Please allow read access to sign in.";
         case "oauth2_error":
-            return "An OAuth2 error occurred while communicating with GitHub. Please try again.";
         case "oauth2_state_lost":
-            return "Your login session expired before it completed. This can happen if the sign-in took too long. Please try again.";
-        case "oauth2_config_error":
-            return "There is a configuration issue with the OAuth2 setup. Please contact support.";
         case "oauth2_token_error":
-            return "Failed to complete the token exchange with GitHub. Please try again.";
-        case "oauth2_server_error":
-            return "GitHub is experiencing issues right now. Please try again in a few minutes.";
         case "invalid_token":
-            return "The authentication token was invalid or expired. Please try again.";
-        case "user_info_error":
-            return "Could not retrieve your GitHub profile information. Please try again.";
-        case "registration_error":
-            return "There was a problem creating your account. Please try again later.";
+            return "Sign-in session timed out. Please click below to try again.";
+        case "oauth2_server_error":
+            return "GitHub is temporarily busy. Please try again in a few moments.";
         default:
-            return "An unexpected error occurred during sign-in. Please try again.";
+            return "Unable to complete sign-in. Please try again.";
     }
 }
+
 function LoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const errorParam = searchParams.get("error");
 
     const status = useAuthStatus();
-
-    // Store the error in state so it persists after clearing the URL
     const [oauthError, setOauthError] = useState<string | null>(errorParam);
+    const shouldReduceMotion = useReducedMotion();
 
-    // Update state during render if the URL error param changes
     if (errorParam && errorParam !== oauthError) {
         setOauthError(errorParam);
     }
 
-    // Strip ?error=... cleanly via Next.js router
     useEffect(() => {
         if (errorParam) {
             router.replace("/login", { scroll: false });
@@ -72,113 +64,205 @@ function LoginContent() {
         }
     }, [status, router]);
 
-    // Trigger GitHub OAuth flow
     const loginMutation = useMutation({
         mutationFn: async () => {
             window.location.href = BACKEND_GITHUB_LOGIN_URL;
-            // Never resolve to keep the button in loading state until the page unloads
             await new Promise(() => {});
         },
     });
 
     if (status === "authenticated") {
         return (
-            <div className="flex flex-col space-y-6 w-full max-w-md mx-auto relative z-10 items-center justify-center py-20">
-                <Spinner className="h-10 w-10 text-primary mb-4" />
-                <p className="text-muted-foreground animate-pulse font-medium">
-                    Redirecting to dashboard...
-                </p>
-            </div>
+            <motion.div
+                initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+                className="w-full max-w-[400px] mx-auto px-4"
+            >
+                <div className="relative rounded-3xl border border-border/80 bg-card/85 backdrop-blur-2xl p-8 sm:p-10 text-center shadow-[0_20px_60px_rgba(0,0,0,0.35)] overflow-hidden before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-primary/50 before:to-transparent">
+                    <div className="flex flex-col items-center">
+                        <div className="size-12 rounded-2xl bg-gradient-to-b from-primary/20 via-primary/10 to-transparent border border-primary/25 flex items-center justify-center text-primary mb-4 shadow-sm">
+                            <CodeMindIcon className="size-6 text-primary animate-pulse" />
+                        </div>
+                        <h2 className="text-xl font-bold tracking-tight text-foreground">Welcome back</h2>
+                        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground mt-3">
+                            <Spinner className="size-3.5 text-primary" />
+                            <span>Taking you to your dashboard&hellip;</span>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
         );
     }
 
     return (
-        <div className="flex flex-col space-y-6 w-full max-w-md mx-auto relative z-10">
-            <div className="flex flex-col space-y-2 text-center items-center">
-                <CodeMindIcon className="h-12 w-12 mb-2 text-primary" />
-                <h1 className="text-3xl font-semibold tracking-tight">Welcome back</h1>
-                <p className="text-sm text-muted-foreground">Sign in to your account to continue</p>
-            </div>
-
-            <Card className="border-border shadow-lg bg-card/50 backdrop-blur-sm">
-                <CardHeader>
-                    <CardTitle className="text-xl">Sign In</CardTitle>
-                    <CardDescription>Use your GitHub account to authenticate.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {oauthError && (
-                        <Alert variant="destructive" className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertTitle>Authentication Failed</AlertTitle>
-                            <AlertDescription className="mt-1 space-y-2">
-                                <p>{getErrorMessage(oauthError)}</p>
-                                <p className="text-xs opacity-80 flex items-center gap-1">
-                                    <RefreshCw className="h-3 w-3" />
-                                    Click &ldquo;Sign in with GitHub&rdquo; below to try again.
-                                </p>
-                            </AlertDescription>
-                        </Alert>
-                    )}
-
-                    <button
-                        type="button"
-                        onClick={() => loginMutation.mutate()}
-                        disabled={loginMutation.isPending}
-                        className={cn(
-                            buttonVariants({ variant: "default" }),
-                            "w-full flex items-center justify-center h-11 transition-all duration-300"
-                        )}
+        <motion.div
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-[400px] mx-auto px-4"
+        >
+            {/* Elegant Card matching landing page aesthetic */}
+            <div className="relative rounded-3xl border border-border/80 bg-card/85 backdrop-blur-2xl p-7 sm:p-9 shadow-[0_20px_60px_rgba(0,0,0,0.35)] overflow-hidden text-center before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-primary/50 before:to-transparent">
+                {/* 1. Logo */}
+                <div className="flex flex-col items-center mb-6">
+                    <Link
+                        href="/"
+                        className="group relative flex items-center justify-center size-12 rounded-2xl bg-gradient-to-b from-primary/20 via-primary/10 to-transparent border border-primary/25 shadow-sm hover:border-primary/50 hover:scale-105 transition-all duration-300 mb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                        aria-label="CodeMind Home"
                     >
-                        {loginMutation.isPending ? (
-                            <>
-                                <Spinner className="mr-2 h-4 w-4 text-primary-foreground" />
-                                Connecting to GitHub...
-                            </>
-                        ) : (
-                            <>
-                                <GitHubIcon className="mr-2 h-5 w-5" />
-                                {oauthError ? "Try Again with GitHub" : "Sign in with GitHub"}
-                            </>
-                        )}
-                    </button>
-                </CardContent>
-            </Card>
+                        <div
+                            className="absolute inset-0 rounded-2xl bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                            aria-hidden="true"
+                        />
+                        <CodeMindIcon className="size-6 text-primary group-hover:scale-110 transition-transform duration-300 relative z-10" />
+                    </Link>
+
+                    {/* 2. Heading */}
+                    <h1 className="text-2xl sm:text-[25px] font-bold tracking-tight text-foreground font-sans">
+                        Welcome to CodeMind
+                    </h1>
+
+                    {/* 3. Description */}
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-2 leading-relaxed max-w-[310px] mx-auto text-balance font-normal">
+                        Connect your GitHub account and bring your repositories into CodeMind.
+                    </p>
+                </div>
+
+                {/* Smooth Error Message Appearance */}
+                <AnimatePresence>
+                    {oauthError && (
+                        <motion.div
+                            initial={shouldReduceMotion ? false : { opacity: 0, y: -6, height: 0 }}
+                            animate={{ opacity: 1, y: 0, height: "auto" }}
+                            exit={{ opacity: 0, y: -6, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="mb-5 rounded-2xl border border-destructive/30 bg-destructive/10 p-3 text-left flex items-start gap-2.5 overflow-hidden"
+                            role="alert"
+                        >
+                            <AlertCircle className="size-4 shrink-0 text-destructive mt-0.5" aria-hidden="true" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-destructive">Unable to sign in</p>
+                                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                                    {getErrorMessage(oauthError)}
+                                </p>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* 4. GitHub Authentication Button */}
+                <div className="space-y-4">
+                    <div className="relative group w-full">
+                        {/* Landing Page Gradient Glow */}
+                        <div
+                            className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/40 via-indigo-500/40 to-purple-500/40 rounded-2xl blur-md opacity-40 group-hover:opacity-80 transition duration-300 pointer-events-none"
+                            aria-hidden="true"
+                        />
+                        <motion.button
+                            type="button"
+                            whileTap={!loginMutation.isPending && !shouldReduceMotion ? { scale: 0.985 } : undefined}
+                            onClick={() => loginMutation.mutate()}
+                            disabled={loginMutation.isPending}
+                            className="relative z-10 w-full h-11 sm:h-12 rounded-xl bg-foreground text-background font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2.5 shadow-xl hover:bg-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-70 disabled:cursor-wait select-none cursor-pointer"
+                        >
+                            {loginMutation.isPending ? (
+                                <div className="flex items-center justify-center gap-2">
+                                    <Spinner className="size-4 text-background" />
+                                    <span>Connecting to GitHub&hellip;</span>
+                                </div>
+                            ) : (
+                                <>
+                                    <FaGithub className="size-[18px] shrink-0" aria-hidden="true" />
+                                    <span>Continue with GitHub</span>
+                                    <ArrowRight
+                                        className="size-4 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200"
+                                        aria-hidden="true"
+                                    />
+                                </>
+                            )}
+                        </motion.button>
+                    </div>
+
+                    {/* 5. Security Information */}
+                    <div className="pt-1 flex items-center justify-center gap-1.5 text-center px-1">
+                        <ShieldCheck className="size-4 text-emerald-400 shrink-0" aria-hidden="true" />
+                        <p className="text-xs text-muted-foreground leading-normal font-normal">
+                            Your code stays yours. CodeMind only accesses the permissions you approve.
+                        </p>
+                    </div>
+                </div>
+
+                {/* 6. Bottom Information */}
+                <div className="mt-7 pt-5 border-t border-border/60">
+                    <p className="text-xs text-muted-foreground/80 leading-relaxed font-normal">
+                        Built for developers who want a better way to understand their code.
+                    </p>
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+function LoginFallback() {
+    return (
+        <div className="w-full max-w-[400px] mx-auto px-4">
+            <div className="rounded-3xl border border-border/80 bg-card/85 backdrop-blur-2xl p-8 sm:p-10 text-center shadow-[0_20px_60px_rgba(0,0,0,0.35)] before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-primary/50 before:to-transparent relative overflow-hidden">
+                <div className="flex flex-col items-center justify-center space-y-3 py-6">
+                    <Spinner className="size-6 text-primary" />
+                    <p className="text-xs text-muted-foreground font-mono tracking-tight animate-pulse">
+                        Loading sign-in&hellip;
+                    </p>
+                </div>
+            </div>
         </div>
     );
 }
 
 export default function LoginPage() {
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-background relative overflow-hidden">
-            {/* Background Decorative Elements */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-                <div className="absolute top-[-25%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px]" />
-                <div className="absolute top-[60%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px]" />
-            </div>
+        <div className="dark min-h-screen flex flex-col justify-between bg-background text-foreground relative overflow-hidden p-4 sm:p-6 md:p-8 selection:bg-primary/30">
+            {/* Subtle Landing Page Grid Pattern */}
+            <div
+                className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#8080800f_1px,transparent_1px),linear-gradient(to_bottom,#8080800f_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"
+                aria-hidden="true"
+            />
 
-            <div className="absolute top-4 left-4 z-50">
-                <Link href="/" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "text-muted-foreground hover:text-foreground")}>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to home
+            {/* Ambient Radial Lighting Matching Landing Page (Hero + Final CTA) */}
+            <div
+                className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-gradient-to-r from-blue-500/12 via-purple-500/12 to-emerald-500/10 blur-[140px] rounded-full"
+                aria-hidden="true"
+            />
+
+            {/* Header: Minimal Back Link & Theme Controls */}
+            <header className="w-full max-w-5xl mx-auto flex items-center justify-between z-20 relative px-2">
+                <Link
+                    href="/"
+                    className={cn(
+                        buttonVariants({ variant: "ghost", size: "sm" }),
+                        "group h-9 rounded-xl px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all flex items-center gap-1.5 cursor-pointer"
+                    )}
+                >
+                    <ArrowLeft className="size-3.5 transition-transform duration-200 group-hover:-translate-x-1" />
+                    <span>Back to home</span>
                 </Link>
-            </div>
 
-            <div className="absolute top-4 right-4 z-50">
-                <ModeToggle />
-            </div>
+                <div className="flex items-center gap-2">
+                    <ModeToggle />
+                </div>
+            </header>
 
-            <Suspense
-                fallback={
-                    <div className="flex flex-col items-center justify-center min-h-100 space-y-4">
-                        <Spinner className="h-8 w-8 text-primary" />
-                        <p className="text-sm text-muted-foreground animate-pulse">
-                            Loading login...
-                        </p>
-                    </div>
-                }
-            >
-                <LoginContent />
-            </Suspense>
+            {/* Main Centered Content */}
+            <main className="flex-1 flex items-center justify-center relative z-10 py-10">
+                <Suspense fallback={<LoginFallback />}>
+                    <LoginContent />
+                </Suspense>
+            </main>
+
+            {/* Minimal Clean Footer */}
+            <footer className="w-full max-w-5xl mx-auto flex items-center justify-center text-xs text-muted-foreground/80 relative z-20 py-2">
+                <p>&copy; {new Date().getFullYear()} CodeMind. All rights reserved.</p>
+            </footer>
         </div>
     );
 }
