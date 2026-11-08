@@ -67,7 +67,7 @@ export function ArchitectureDiagram() {
                         Engineered for speed, privacy, and scale.
                     </h2>
                     <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                        A multi-tier architecture built to index repositories cleanly, search code conceptually, 
+                        A multi-tier architecture built to index repositories cleanly, search code conceptually,
                         and keep your proprietary intellectual property completely isolated.
                     </p>
                 </div>
